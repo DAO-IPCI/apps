@@ -24,6 +24,11 @@ if (process.env.WS_URL) {
 
 const LIVE: Option[] = [
   {
+    info: 'ipci',
+    text: 'IPCI Substrate',
+    value: 'wss://substrate.ipci.io'
+  },
+  {
     info: 'kusama',
     text: 'Kusama (Polkadot Canary, hosted by Parity)',
     value: 'wss://kusama-rpc.polkadot.io/'

@@ -7,11 +7,13 @@ import edgeware from './edgeware';
 import encointerNode from './encointer-node';
 import kulupu from './kulupu';
 import nodeTemplate from './node-template';
+import ipci from './ipci';
 
 export default {
   'centrifuge-chain': centrifugeChain,
   edgeware,
   'encointer-node': encointerNode,
   kulupu,
+  ipci,
   'node-template': nodeTemplate
 };
