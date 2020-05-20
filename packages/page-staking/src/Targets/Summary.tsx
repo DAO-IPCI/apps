@@ -14,8 +14,8 @@ import { useTranslation } from '../translate';
 
 interface Props {
   lastReward?: BN;
-  numNominators: number;
-  numValidators: number;
+  numNominators?: number;
+  numValidators?: number;
   totalStaked?: BN;
 }
 
@@ -26,7 +26,7 @@ function Summary ({ lastReward, numNominators, numValidators, totalStaked }: Pro
   const [percentage, setPercentage] = useState<string | undefined>();
 
   useEffect((): void => {
-    totalIssuance && totalStaked?.gtn(0) && setPercentage(
+    totalIssuance && totalStaked && totalStaked.gtn(0) && setPercentage(
       `${(totalStaked.muln(10000).div(totalIssuance).toNumber() / 100).toFixed(2)}%`
     );
   }, [totalIssuance, totalStaked]);
@@ -59,9 +59,11 @@ function Summary ({ lastReward, numNominators, numValidators, totalStaked }: Pro
           {percentage}
         </CardSummary>
       )}
-      <CardSummary label={t('validators/nominators')}>
-        {numValidators}/{numNominators}
-      </CardSummary>
+      {numValidators && numNominators && (
+        <CardSummary label={t('validators/nominators')}>
+          {numValidators}/{numNominators}
+        </CardSummary>
+      )}
       {lastReward?.gtn(0) && (
         <CardSummary label={t('last reward')}>
           <FormatBalance
