@@ -1,4 +1,5 @@
 {
+  "https://substrate.ipci.io/rpc": "IPCI Substrate",
   "lng.detect": "Default browser language (auto-detect)",
   "rpc.arcadia": "Arcadia (Nodle Testnet, hosted by Nodle)",
   "rpc.berlin": "Berlin (Edgeware Testnet, hosted by Commonwealth Labs)",
@@ -8,6 +9,7 @@
   "rpc.header.dev": "Development",
   "rpc.header.live": "Live networks",
   "rpc.header.test": "Test networks",
+  "rpc.ipci": "IPCI Substrate",
   "rpc.kulupu": "Kulupu (Kulupu Mainnet, hosted by Kulupu)",
   "rpc.kusama.ava": "Kusama (Polkadot Canary, user-run public nodes; see https://status.cloud.ava.do/)",
   "rpc.kusama.parity": "Kusama (Polkadot Canary, hosted by Parity)",
@@ -17,11 +19,7 @@
   "ss58.centrifuge": "Centrifuge (live)",
   "ss58.default": "Default for the connected node",
   "ss58.edgeware": "Edgeware (live)",
-  "ss58.centrifuge": "Centrifuge (live)",
-  "https://substrate.ipci.io/rpc": "IPCI Substrate",
-  "rpc.ipci": "IPCI Substrate",
   "ss58.kusmaa": "Kusama (canary)",
   "ss58.polkadot": "Polkadot (live)",
   "ss58.substrate": "Substrate (generic)"
 }
-
