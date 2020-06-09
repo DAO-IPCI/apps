@@ -8,7 +8,7 @@ import React, { useCallback } from 'react';
 import styled from 'styled-components';
 import { useAccountInfo, useToggle } from '@polkadot/react-hooks';
 import { colorLink } from '@polkadot/react-components/styles/theme';
-import { AccountName, Button, Icon, IdentityIcon, Input, InputTags, LinkExternal, Tag } from '@polkadot/react-components';
+import { AccountName, Button, Icon, IdentityIcon, Input, LinkExternal, Tags } from '@polkadot/react-components';
 
 import Transfer from '../Accounts/modals/Transfer';
 import { useTranslation } from '../translate';
@@ -22,11 +22,7 @@ interface Props extends BareProps {
   onUpdateName: () => void;
 }
 
-const TAG_OPTS = {
-  autoFocus: true
-};
-
-function Sidebar ({ address, className, onClose, onUpdateName }: Props): React.ReactElement<Props> {
+function Sidebar ({ address, className = '', onClose, onUpdateName }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const { flags, identity, isEditingName, isEditingTags, meta, name, onForgetAddress, onSaveName, onSaveTags, setName, setTags, tags, toggleIsEditingName, toggleIsEditingTags } = useAccountInfo(address);
   const [isHoveringButton, toggleIsHoveringButton] = useToggle();
@@ -80,7 +76,7 @@ function Sidebar ({ address, className, onClose, onUpdateName }: Props): React.R
                 />
               )
               : flags.isEditable
-                ? (name.toUpperCase() || t('<unknown>'))
+                ? (name.toUpperCase() || t<string>('<unknown>'))
                 : undefined
           }
           value={address}
@@ -94,52 +90,22 @@ function Sidebar ({ address, className, onClose, onUpdateName }: Props): React.R
           )}
         </AccountName>
         <div className='ui--AddressMenu-tags'>
-          {isEditingTags
-            ? (
-              <InputTags
-                defaultValue={tags}
-                onBlur={onSaveTags}
-                onChange={setTags}
-                onClose={onSaveTags}
-                openOnFocus
-                searchInput={TAG_OPTS}
-                value={tags}
-                withLabel={false}
-              />
-            )
-            : (
-              <div
-                className='tags--toggle'
-                onClick={toggleIsEditingTags}
-              >
-                {tags.length
-                  ? tags.map((tag): React.ReactNode => (
-                    <Tag
-                      color='grey'
-                      key={tag}
-                      label={tag}
-                      size='tiny'
-                    />
-                  ))
-                  : <label>{t('no tags')}</label>
-                }
-              </div>
-            )
-          }
-          {(!isEditingTags && (flags.isInContacts || flags.isOwned)) && (
-            <Icon
-              className='inline-icon'
-              name='edit'
-              onClick={toggleIsEditingTags}
-            />
-          )}
+          <Tags
+            isEditable
+            isEditing={isEditingTags}
+            onChange={setTags}
+            onSave={onSaveTags}
+            onToggleIsEditing={toggleIsEditingTags}
+            size='tiny'
+            value={tags}
+          />
         </div>
         <Flags flags={flags} />
         <div className='ui-AddressMenu--button'>
           <Button.Group>
             <Button
               icon='send'
-              label={t('Deposit')}
+              label={t<string>('Deposit')}
               onClick={toggleIsTransferOpen}
             />
             {flags.isOwned && (
@@ -147,7 +113,7 @@ function Sidebar ({ address, className, onClose, onUpdateName }: Props): React.R
                 className='basic'
                 icon='check'
                 isPrimary
-                label={t('Owned')}
+                label={t<string>('Owned')}
                 onMouseEnter={toggleIsHoveringButton}
                 onMouseLeave={toggleIsHoveringButton}
                 size='tiny'
@@ -157,7 +123,7 @@ function Sidebar ({ address, className, onClose, onUpdateName }: Props): React.R
               <Button
                 icon='add'
                 isPositive
-                label={t('Save')}
+                label={t<string>('Save')}
                 onClick={_onUpdateName}
                 onMouseEnter={toggleIsHoveringButton}
                 onMouseLeave={toggleIsHoveringButton}
@@ -178,12 +144,12 @@ function Sidebar ({ address, className, onClose, onUpdateName }: Props): React.R
                 <Button.Content visible>
                   <Icon name='check' />
                   &nbsp;
-                  {t('Saved')}
+                  {t<string>('Saved')}
                 </Button.Content>
                 <Button.Content hidden>
                   <Icon name='ban' />
                   &nbsp;
-                  {t('Remove')}
+                  {t<string>('Remove')}
                 </Button.Content>
               </Button>
             )}

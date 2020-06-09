@@ -5,7 +5,8 @@
 import BN from 'bn.js';
 import React, { useState } from 'react';
 import { InputAddress, InputBalance, Modal, TxButton } from '@polkadot/react-components';
-import { Available } from '@polkadot/react-query';
+import { BalanceFree } from '@polkadot/react-query';
+import { BN_ZERO } from '@polkadot/util';
 
 import { useTranslation } from '../../translate';
 import ValidateAmount from './InputValidateAmount';
@@ -14,8 +15,6 @@ interface Props {
   onClose: () => void;
   stashId: string;
 }
-
-const ZERO = new BN(0);
 
 function BondExtra ({ onClose, stashId }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
@@ -26,7 +25,7 @@ function BondExtra ({ onClose, stashId }: Props): React.ReactElement<Props> {
   return (
     <Modal
       className='staking--BondExtra'
-      header= {t('Bond more funds')}
+      header= {t<string>('Bond more funds')}
       size='large'
     >
       <Modal.Content className='ui--signer-Signer-Content'>
@@ -35,23 +34,23 @@ function BondExtra ({ onClose, stashId }: Props): React.ReactElement<Props> {
             <InputAddress
               defaultValue={stashId}
               isDisabled
-              label={t('stash account')}
+              label={t<string>('stash account')}
             />
           </Modal.Column>
           <Modal.Column>
-            <p>{t('Since this transaction deals with funding, the stash account will be used.')}</p>
+            <p>{t<string>('Since this transaction deals with funding, the stash account will be used.')}</p>
           </Modal.Column>
         </Modal.Columns>
         <Modal.Columns>
           <Modal.Column>
             <InputBalance
               autoFocus
-              help={t('Amount to add to the currently bonded funds. This is adjusted using the available funds on the account.')}
+              help={t<string>('Amount to add to the currently bonded funds. This is adjusted using the available funds on the account.')}
               isError={!!amountError || !maxAdditional || maxAdditional.eqn(0)}
-              label={t('additional bonded funds')}
+              label={t<string>('additional bonded funds')}
               labelExtra={
-                <Available
-                  label={<span className='label'>{t('available')}</span>}
+                <BalanceFree
+                  label={<span className='label'>{t<string>('balance')}</span>}
                   params={stashId}
                 />
               }
@@ -65,7 +64,7 @@ function BondExtra ({ onClose, stashId }: Props): React.ReactElement<Props> {
             />
           </Modal.Column>
           <Modal.Column>
-            <p>{t('Ensure that not all funds are locked, funds need to be available for fees.')}</p>
+            <p>{t<string>('Ensure that not all funds are locked, funds need to be available for fees.')}</p>
           </Modal.Column>
         </Modal.Columns>
       </Modal.Content>
@@ -73,9 +72,9 @@ function BondExtra ({ onClose, stashId }: Props): React.ReactElement<Props> {
         <TxButton
           accountId={stashId}
           icon='sign-in'
-          isDisabled={!maxAdditional?.gt(ZERO)}
+          isDisabled={!maxAdditional?.gt(BN_ZERO)}
           isPrimary
-          label={t('Bond more')}
+          label={t<string>('Bond more')}
           onStart={onClose}
           params={[maxAdditional]}
           tx='staking.bondExtra'

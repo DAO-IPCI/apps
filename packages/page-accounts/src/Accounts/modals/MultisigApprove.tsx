@@ -6,6 +6,7 @@ import { H256, Multisig } from '@polkadot/types/interfaces';
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Dropdown, InputAddress, Modal, TxButton } from '@polkadot/react-components';
+import { useApi } from '@polkadot/react-hooks';
 
 import { useTranslation } from '../../translate';
 
@@ -23,16 +24,17 @@ interface Option {
   value: string;
 }
 
-function MultisigApprove ({ className, onClose, ongoing, threshold, who }: Props): React.ReactElement<Props> {
+function MultisigApprove ({ className = '', onClose, ongoing, threshold, who }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
+  const { api } = useApi();
   const [hash, setHash] = useState<string | null>(ongoing[0][0].toHex());
   const [multisig, setMultisig] = useState<[H256, Multisig] | null>(null);
   const [signatory, setSignatory] = useState<string | null>(null);
   const [type, setType] = useState<string | null>('aye');
   const calltypes = useMemo<Option[]>(
     () => [
-      { text: t('Approve this call hash'), value: 'aye' },
-      { text: t('Cancel this call hash'), value: 'nay' }
+      { text: t<string>('Approve this call hash'), value: 'aye' },
+      { text: t<string>('Cancel this call hash'), value: 'nay' }
     ],
     [t]
   );
@@ -50,25 +52,25 @@ function MultisigApprove ({ className, onClose, ongoing, threshold, who }: Props
   return (
     <Modal
       className={className}
-      header={t('Pending call hashes')}
+      header={t<string>('Pending call hashes')}
     >
       <Modal.Content>
         <InputAddress
           filter={who}
-          help={t('The signatory to send the approval/cancel from')}
-          label={t('signatory')}
+          help={t<string>('The signatory to send the approval/cancel from')}
+          label={t<string>('signatory')}
           onChange={setSignatory}
         />
         <Dropdown
-          help={t('The call hashes that have not been executed as of yet.')}
-          label={t('pending hashes')}
+          help={t<string>('The call hashes that have not been executed as of yet.')}
+          label={t<string>('pending hashes')}
           onChange={setHash}
           options={hashes}
           value={hash}
         />
         <Dropdown
-          help={t('Either approve or reject this call.')}
-          label={t('approval type')}
+          help={t<string>('Either approve or reject this call.')}
+          label={t<string>('approval type')}
           onChange={setType}
           options={calltypes}
           value={type}
@@ -82,11 +84,7 @@ function MultisigApprove ({ className, onClose, ongoing, threshold, who }: Props
           label={type === 'aye' ? 'Approve' : 'Reject'}
           onStart={onClose}
           params={[threshold, who.filter((who) => who !== signatory), multisig ? multisig[1].when : null, hash]}
-          tx={
-            type === 'aye'
-              ? 'utility.approveAsMulti'
-              : 'utility.cancelAsMulti'
-          }
+          tx={`${api.tx.multisig ? 'multisig' : 'utility'}.${type === 'aye' ? 'approveAsMulti' : 'cancelAsMulti'}`}
         />
       </Modal.Actions>
     </Modal>

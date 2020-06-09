@@ -9,7 +9,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useApi, useCall } from '@polkadot/react-hooks';
 import { BlockToTime, FormatBalance } from '@polkadot/react-query';
-import { bnMax, formatBalance, formatNumber } from '@polkadot/util';
+import { BN_ZERO, bnMax, formatBalance, formatNumber } from '@polkadot/util';
 
 import { useTranslation } from './translate';
 import Icon from './Icon';
@@ -20,11 +20,9 @@ interface Props {
   value?: DeriveDemocracyLock[];
 }
 
-const ZERO = new BN(0);
-
 let id = 0;
 
-function DemocracyLocks ({ className, value }: Props): React.ReactElement<Props> | null {
+function DemocracyLocks ({ className = '', value }: Props): React.ReactElement<Props> | null {
   const { t } = useTranslation();
   const { api } = useApi();
   const bestNumber = useCall<BN>(api.derive.chain.bestNumber, []);
@@ -36,7 +34,7 @@ function DemocracyLocks ({ className, value }: Props): React.ReactElement<Props>
 
   const max = bnMax(...value.map(({ balance }) => balance));
   const mapped = value
-    .map((info): [DeriveDemocracyLock, BN] => [info, info.unlockAt.gt(bestNumber) ? info.unlockAt.sub(bestNumber) : ZERO])
+    .map((info): [DeriveDemocracyLock, BN] => [info, info.unlockAt.gt(bestNumber) ? info.unlockAt.sub(bestNumber) : BN_ZERO])
     .sort((a, b) => a[1].cmp(b[1]));
 
   return (
@@ -55,16 +53,16 @@ function DemocracyLocks ({ className, value }: Props): React.ReactElement<Props>
           >
             <div>#{referendumId.toString()} {formatBalance(balance, { forceUnit: '-' })} {vote.conviction.toString()}</div>
             <div className='faded'>
-              {blocks.gt(ZERO)
+              {blocks.gt(BN_ZERO)
                 ? (
                   <BlockToTime
                     blocks={blocks}
-                    label={`${t('{{blocks}} blocks', { replace: { blocks: formatNumber(blocks) } })}, `}
+                    label={`${t<string>('{{blocks}} blocks', { replace: { blocks: formatNumber(blocks) } })}, `}
                   />
                 )
                 : isFinished
-                  ? t('lock expired')
-                  : t('ongoing referendum')
+                  ? t<string>('lock expired')
+                  : t<string>('ongoing referendum')
               }
             </div>
           </div>

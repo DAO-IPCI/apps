@@ -9,7 +9,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useApi, useCall } from '@polkadot/react-hooks';
 import { BlockToTime, FormatBalance } from '@polkadot/react-query';
-import { formatBalance, formatNumber } from '@polkadot/util';
+import { BN_ZERO, formatBalance, formatNumber } from '@polkadot/util';
 
 import Icon from './Icon';
 import Tooltip from './Tooltip';
@@ -27,7 +27,7 @@ function remainingBlocks (remainingEras: BN, { eraLength, eraProgress }: DeriveS
     .add(eraLength.sub(eraProgress));
 }
 
-function StakingUnbonding ({ className, value }: Props): React.ReactElement<Props> | null {
+function StakingUnbonding ({ className = '', value }: Props): React.ReactElement<Props> | null {
   const { api } = useApi();
   const progress = useCall<DeriveSessionProgress>(api.derive.session.progress, []);
   const { t } = useTranslation();
@@ -43,8 +43,8 @@ function StakingUnbonding ({ className, value }: Props): React.ReactElement<Prop
   }
 
   const mapped = filtered.map((unlock): [DeriveUnlocking, BN] => [unlock, remainingBlocks(unlock.remainingEras, progress)]);
-  const total = mapped.reduce((total, [{ value }]) => total.add(value), new BN(0));
-  const trigger = `${value.accountId}-unlocking-trigger`;
+  const total = mapped.reduce((total, [{ value }]) => total.add(value), BN_ZERO);
+  const trigger = `${value.accountId.toHex()}-unlocking-trigger`;
 
   return (
     <div className={className}>
@@ -60,11 +60,11 @@ function StakingUnbonding ({ className, value }: Props): React.ReactElement<Prop
             className='row'
             key={index}
           >
-            <div>{t('Unbonding {{value}}, ', { replace: { value: formatBalance(value, { forceUnit: '-' }) } })}</div>
+            <div>{t<string>('Unbonding {{value}}, ', { replace: { value: formatBalance(value, { forceUnit: '-' }) } })}</div>
             <div className='faded'>
               <BlockToTime
                 blocks={blocks}
-                label={`${t('{{blocks}} blocks', { replace: { blocks: formatNumber(blocks) } })}, `}
+                label={`${t<string>('{{blocks}} blocks', { replace: { blocks: formatNumber(blocks) } })}, `}
               />
             </div>
           </div>
