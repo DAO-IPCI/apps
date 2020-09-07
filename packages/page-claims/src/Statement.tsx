@@ -21,13 +21,11 @@ function StatementFullText ({ statementUrl, systemChain }: { statementUrl?: stri
   const { t } = useTranslation();
 
   switch (systemChain) {
-    case 'Polkadot CC1': {
-      if (!statementUrl) {
-        return null;
-      }
-
-      return <iframe src={statementUrl} />;
-    }
+    case 'Polkadot':
+    case 'Polkadot CC1':
+      return statementUrl
+        ? <iframe src={statementUrl} />
+        : null;
 
     default:
       return <p>{t('Warning: we did not find any attest statement for {{chain}}', { replace: { chain: systemChain } })}</p>;
@@ -37,6 +35,10 @@ function StatementFullText ({ statementUrl, systemChain }: { statementUrl?: stri
 function Statement ({ className, kind, systemChain }: Props): React.ReactElement<Props> | null {
   const { t } = useTranslation();
   const statementUrl = getStatement(systemChain, kind)?.url;
+
+  if (!statementUrl) {
+    return null;
+  }
 
   return (
     <div className={className}>

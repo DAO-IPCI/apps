@@ -37,7 +37,7 @@ function Fasttrack ({ imageHash, threshold }: Props): React.ReactElement<Props> 
   const [votingBlocks, setVotingBlocks] = useState<BN | undefined>(DEF_VOTING);
   const [{ proposal, proposalLength }, setProposal] = useState<ProposalState>({ proposalLength: 0 });
   const memberThreshold = useMemo(
-    () => Math.ceil(members.length * 0.5),
+    () => Math.ceil(members.length * 0.66),
     [members]
   );
 
@@ -92,14 +92,13 @@ function Fasttrack ({ imageHash, threshold }: Props): React.ReactElement<Props> 
           <Modal.Actions onCancel={toggleFasttrack}>
             <TxButton
               accountId={accountId}
-              icon='fast forward'
+              icon='fast-forward'
               isDisabled={!accountId || !proposal || !memberThreshold}
-              isPrimary
               label={t<string>('Fast track')}
               onStart={toggleFasttrack}
               params={
                 api.tx.technicalCommittee.propose.meta.args.length === 3
-                  ? [threshold, proposal, proposalLength]
+                  ? [memberThreshold, proposal, proposalLength]
                   : [memberThreshold, proposal]
               }
               tx='technicalCommittee.propose'
@@ -108,7 +107,7 @@ function Fasttrack ({ imageHash, threshold }: Props): React.ReactElement<Props> 
         </Modal>
       )}
       <Button
-        icon='fast forward'
+        icon='fast-forward'
         isDisabled={!allowFast}
         label={t<string>('Fast track')}
         onClick={toggleFasttrack}

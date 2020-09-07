@@ -2,16 +2,18 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { Balance } from '@polkadot/types/interfaces';
-import { DeriveAccountInfo, DeriveStakingQuery } from '@polkadot/api-derive/types';
+import { Balance, EraIndex, SlashingSpans, ValidatorPrefs } from '@polkadot/types/interfaces';
+import { DeriveAccountInfo } from '@polkadot/api-derive/types';
+import { ValidatorInfo } from '../../types';
 
 import BN from 'bn.js';
-import React, { useCallback, useEffect, useState } from 'react';
-import ApiPromise from '@polkadot/api/promise';
-import { AddressSmall, Icon } from '@polkadot/react-components';
-import { useAccounts, useApi, useCall } from '@polkadot/react-hooks';
+import React, { useCallback, useMemo } from 'react';
+import { ApiPromise } from '@polkadot/api';
+import { AddressSmall, Icon, LinkExternal } from '@polkadot/react-components';
+import { checkVisibility } from '@polkadot/react-components/util';
+import { useApi, useCall } from '@polkadot/react-hooks';
 import { FormatBalance } from '@polkadot/react-query';
-import keyring from '@polkadot/ui-keyring';
+import { Option } from '@polkadot/types';
 
 import Favorite from './Favorite';
 import NominatedBy from './NominatedBy';
@@ -23,17 +25,17 @@ interface Props {
   className?: string;
   filterName: string;
   hasQueries: boolean;
-  isAuthor?: boolean;
   isElected: boolean;
   isFavorite: boolean;
   isMain?: boolean;
   lastBlock?: string;
-  nominatedBy?: [string, number][];
-  onlineCount?: false | number;
+  nominatedBy?: [string, EraIndex, number][];
+  onlineCount?: false | BN;
   onlineMessage?: boolean;
   points?: string;
-  setNominators?: false | ((nominators: string[]) => void);
   toggleFavorite: (accountId: string) => void;
+  validatorInfo?: ValidatorInfo;
+  withIdentity: boolean;
 }
 
 interface StakingState {
@@ -44,11 +46,7 @@ interface StakingState {
   stakeOwn?: BN;
 }
 
-/* stylelint-disable */
-const PERBILL_PERCENT = 10_000_000;
-/* stylelint-enable */
-
-function expandInfo ({ exposure, validatorPrefs }: DeriveStakingQuery): StakingState {
+function expandInfo ({ exposure, validatorPrefs }: ValidatorInfo): StakingState {
   let nominators: [string, Balance][] = [];
   let stakeTotal: BN | undefined;
   let stakeOther: BN | undefined;
@@ -61,12 +59,10 @@ function expandInfo ({ exposure, validatorPrefs }: DeriveStakingQuery): StakingS
     stakeOther = stakeTotal.sub(stakeOwn);
   }
 
-  const commission = validatorPrefs?.commission?.unwrap();
+  const commission = (validatorPrefs as ValidatorPrefs)?.commission?.unwrap();
 
   return {
-    commission: commission
-      ? `${(commission.toNumber() / PERBILL_PERCENT).toFixed(2)}%`
-      : undefined,
+    commission: commission?.toHuman(),
     nominators,
     stakeOther,
     stakeOwn,
@@ -74,68 +70,31 @@ function expandInfo ({ exposure, validatorPrefs }: DeriveStakingQuery): StakingS
   };
 }
 
-function checkVisibility (api: ApiPromise, address: string, filterName: string, accountInfo?: DeriveAccountInfo): boolean {
-  let isVisible = false;
-  const filterLower = filterName.toLowerCase();
+const transformSlashes = {
+  transform: (opt: Option<SlashingSpans>) => opt.unwrapOr(null)
+};
 
-  if (filterLower) {
-    if (accountInfo) {
-      const { accountId, accountIndex, identity, nickname } = accountInfo;
+function useAddressCalls (api: ApiPromise, address: string, isMain?: boolean) {
+  const params = useMemo(() => [address], [address]);
+  const accountInfo = useCall<DeriveAccountInfo>(api.derive.accounts.info, params);
+  const slashingSpans = useCall<SlashingSpans | null>(!isMain && api.query.staking.slashingSpans, params, transformSlashes);
 
-      if (accountId?.toString().includes(filterName) || accountIndex?.toString().includes(filterName)) {
-        isVisible = true;
-      } else if (api.query.identity && api.query.identity.identityOf) {
-        isVisible = (!!identity?.display && identity.display.toLowerCase().includes(filterLower)) ||
-          (!!identity?.displayParent && identity.displayParent.toLowerCase().includes(filterLower));
-      } else if (nickname) {
-        isVisible = nickname.toLowerCase().includes(filterLower);
-      }
-    }
-
-    if (!isVisible) {
-      const account = keyring.getAddress(address);
-
-      isVisible = account?.meta?.name
-        ? account.meta.name.toLowerCase().includes(filterLower)
-        : false;
-    }
-  } else {
-    isVisible = true;
-  }
-
-  return isVisible;
+  return { accountInfo, slashingSpans };
 }
 
-function Address ({ address, className = '', filterName, hasQueries, isAuthor, isElected, isFavorite, isMain, lastBlock, nominatedBy, onlineCount, onlineMessage, points, setNominators, toggleFavorite }: Props): React.ReactElement<Props> | null {
+function Address ({ address, className = '', filterName, hasQueries, isElected, isFavorite, isMain, lastBlock, nominatedBy, onlineCount, onlineMessage, points, toggleFavorite, validatorInfo, withIdentity }: Props): React.ReactElement<Props> | null {
   const { api } = useApi();
-  const { allAccounts } = useAccounts();
-  const accountInfo = useCall<DeriveAccountInfo>(isMain && api.derive.accounts.info, [address]);
-  const stakingInfo = useCall<DeriveStakingQuery>(api.derive.staking.query, [address]);
-  const [{ commission, nominators, stakeOther, stakeOwn }, setStakingState] = useState<StakingState>({ nominators: [] });
-  const [isVisible, setIsVisible] = useState(true);
-  const [isNominating, setIsNominating] = useState(false);
+  const { accountInfo, slashingSpans } = useAddressCalls(api, address, isMain);
 
-  useEffect((): void => {
-    if (stakingInfo) {
-      const info = expandInfo(stakingInfo);
+  const { commission, nominators, stakeOther, stakeOwn } = useMemo(
+    () => validatorInfo ? expandInfo(validatorInfo) : { nominators: [] },
+    [validatorInfo]
+  );
 
-      setNominators && setNominators(info.nominators.map(([who]): string => who.toString()));
-      setStakingState(info);
-    }
-  }, [setNominators, stakingInfo]);
-
-  useEffect((): void => {
-    setIsVisible(
-      checkVisibility(api, address, filterName, accountInfo)
-    );
-  }, [api, accountInfo, address, filterName]);
-
-  useEffect((): void => {
-    !isMain && setIsNominating(
-      allAccounts.includes(address) ||
-      (nominatedBy || []).some(([address]) => allAccounts.includes(address))
-    );
-  }, [address, allAccounts, isMain, nominatedBy]);
+  const isVisible = useMemo(
+    () => accountInfo ? checkVisibility(api, address, accountInfo, filterName, withIdentity) : true,
+    [api, accountInfo, address, filterName, withIdentity]
+  );
 
   const _onQueryStats = useCallback(
     (): void => {
@@ -144,19 +103,26 @@ function Address ({ address, className = '', filterName, hasQueries, isAuthor, i
     [address]
   );
 
+  if (!isVisible) {
+    return null;
+  }
+
   return (
-    <tr className={`${className} ${(isAuthor || isNominating) ? 'isHighlight' : ''} ${!isVisible ? 'staking--hidden' : ''}`}>
-      <Favorite
-        address={address}
-        isFavorite={isFavorite}
-        toggleFavorite={toggleFavorite}
-      />
-      <Status
-        isElected={isElected}
-        numNominators={nominatedBy?.length}
-        onlineCount={onlineCount}
-        onlineMessage={onlineMessage}
-      />
+    <tr className={className}>
+      <td className='badge together'>
+        <Favorite
+          address={address}
+          isFavorite={isFavorite}
+          toggleFavorite={toggleFavorite}
+        />
+        <Status
+          isElected={isElected}
+          isMain={isMain}
+          numNominators={(nominatedBy || nominators).length}
+          onlineCount={onlineCount}
+          onlineMessage={onlineMessage}
+        />
+      </td>
       <td className='address'>
         <AddressSmall value={address} />
       </td>
@@ -167,9 +133,14 @@ function Address ({ address, className = '', filterName, hasQueries, isAuthor, i
             stakeOther={stakeOther}
           />
         )
-        : <NominatedBy nominators={nominatedBy} />
+        : (
+          <NominatedBy
+            nominators={nominatedBy}
+            slashingSpans={slashingSpans}
+          />
+        )
       }
-      <td className='number'>
+      <td className='number media--1100'>
         {stakeOwn?.gtn(0) && (
           <FormatBalance value={stakeOwn} />
         )}
@@ -177,19 +148,30 @@ function Address ({ address, className = '', filterName, hasQueries, isAuthor, i
       <td className='number'>
         {commission}
       </td>
-      <td className='number'>
-        {points}
-      </td>
-      <td className='number'>
-        {lastBlock}
-      </td>
+      {isMain && (
+        <>
+          <td className='number'>
+            {points}
+          </td>
+          <td className='number'>
+            {lastBlock}
+          </td>
+        </>
+      )}
       <td>
         {hasQueries && (
           <Icon
-            name='line graph'
+            icon='chart-line'
             onClick={_onQueryStats}
           />
         )}
+      </td>
+      <td className='links media--1200'>
+        <LinkExternal
+          data={address}
+          isLogo
+          type={isMain ? 'validator' : 'intention'}
+        />
       </td>
     </tr>
   );

@@ -2,18 +2,45 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
+import acala from './acala';
 import centrifugeChain from './centrifuge-chain';
+import crab from './crab';
+import crust from './crust';
+import darwiniaParachain from './darwinia-parachain';
+import testPara from './cumulus-test-parachain';
 import edgeware from './edgeware';
-import encointerNode from './encointer-node';
+import encointerNodeNotee from './encointer-node-notee';
+import encointerNodeTeeproxy from './encointer-node-teeproxy';
+import kilt from './kilt';
 import kulupu from './kulupu';
+import laminar from './laminar';
 import nodeTemplate from './node-template';
 import ipci from './ipci';
+import nodle from './nodle';
+import plasm from './plasm';
+import stablePoc from './stable-poc';
+import subsocialNode from './subsocial';
 
 export default {
+  Crab: crab,
+  acala,
   'centrifuge-chain': centrifugeChain,
+  crust,
+  'cumulus-test-parachain': testPara,
+  'darwinia-parachain': darwiniaParachain,
+  dusty3: plasm,
   edgeware,
-  'encointer-node': encointerNode,
+  'encointer-node': encointerNodeNotee,
+  'encointer-node-notee': encointerNodeNotee,
+  'encointer-node-teeproxy': encointerNodeTeeproxy,
   kulupu,
   ipci,
-  'node-template': nodeTemplate
+  laminar,
+  'mashnet-node': kilt,
+  'node-template': nodeTemplate,
+  'nodle-chain': nodle,
+  plasm,
+  'stable-poc': stablePoc,
+  stable_poc: stablePoc,
+  subsocial: subsocialNode
 };

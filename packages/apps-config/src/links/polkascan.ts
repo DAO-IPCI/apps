@@ -4,18 +4,21 @@
 
 import BN from 'bn.js';
 
+import { externalLogos } from '../ui/logos';
+
 export default {
   chains: {
-    Edgeware: 'edgeware',
+    // 'Centrifuge Mainnet': 'centrifuge',
+    // Edgeware: 'edgeware',
     Kulupu: 'kulupu',
     Kusama: 'kusama',
-    'Kusama CC3': 'kusama',
-    'Polkadot CC1': 'polkadot-cc1',
-    Westend: 'westend-m2'
+    Polkadot: 'polkadot',
+    'Polkadot CC1': 'polkadot-cc1'
   },
   create: (chain: string, path: string, data: BN | number | string): string =>
     `https://polkascan.io/${chain}/${path}/${data.toString()}`,
   isActive: true,
+  logo: externalLogos.polkascan as string,
   paths: {
     address: 'account',
     block: 'block',

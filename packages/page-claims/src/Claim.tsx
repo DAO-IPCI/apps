@@ -33,22 +33,14 @@ interface ConstructTx {
 }
 
 // Depending on isOldClaimProcess, construct the correct tx.
-function constructTx (
-  systemChain: string,
-  accountId: string,
-  ethereumSignature: string | null,
-  kind: StatementKind | undefined,
-  isOldClaimProcess: boolean
-): ConstructTx {
+function constructTx (systemChain: string, accountId: string, ethereumSignature: string | null, kind: StatementKind | undefined, isOldClaimProcess: boolean): ConstructTx {
   if (!ethereumSignature) {
     return {};
   }
 
-  return isOldClaimProcess
+  return isOldClaimProcess || !kind
     ? { params: [accountId, ethereumSignature], tx: 'claims.claim' }
-    : !kind
-      ? {}
-      : { params: [accountId, ethereumSignature, getStatement(systemChain, kind)?.sentence], tx: 'claims.claimAttest' };
+    : { params: [accountId, ethereumSignature, getStatement(systemChain, kind)?.sentence], tx: 'claims.claimAttest' };
 }
 
 function Claim ({ accountId, className = '', ethereumAddress, ethereumSignature, isOldClaimProcess, onSuccess, statementKind, systemChain }: Props): React.ReactElement<Props> | null {
@@ -94,8 +86,7 @@ function Claim ({ accountId, className = '', ethereumAddress, ethereumSignature,
               <h2><FormatBalance value={claimValue} /></h2>
               <Button.Group>
                 <TxButton
-                  icon='send'
-                  isPrimary
+                  icon='paper-plane'
                   isUnsigned
                   label={t('Claim')}
                   onSuccess={onSuccess}

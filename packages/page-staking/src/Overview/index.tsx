@@ -3,29 +3,34 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { DeriveStakingOverview } from '@polkadot/api-derive/types';
-import { BareProps } from '@polkadot/react-components/types';
+import { SortedTargets } from '../types';
 
 import React from 'react';
 
 import CurrentList from './CurrentList';
 
-interface Props extends BareProps {
+interface Props {
+  className?: string;
+  favorites: string[];
   hasQueries: boolean;
   isIntentions?: boolean;
   next?: string[];
-  setNominators?: (nominators: string[]) => void;
   stakingOverview?: DeriveStakingOverview;
+  targets: SortedTargets;
+  toggleFavorite: (address: string) => void;
 }
 
-function Overview ({ className = '', hasQueries, isIntentions, next, setNominators, stakingOverview }: Props): React.ReactElement<Props> {
+function Overview ({ className = '', favorites, hasQueries, isIntentions, next, stakingOverview, targets, toggleFavorite }: Props): React.ReactElement<Props> {
   return (
     <div className={`staking--Overview ${className}`}>
       <CurrentList
+        favorites={favorites}
         hasQueries={hasQueries}
         isIntentions={isIntentions}
         next={next}
-        setNominators={setNominators}
         stakingOverview={stakingOverview}
+        targets={targets}
+        toggleFavorite={toggleFavorite}
       />
     </div>
   );

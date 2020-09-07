@@ -3,21 +3,25 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { SiDef } from '@polkadot/util/types';
-import { BareProps, BitLength } from './types';
+import { BitLength } from './types';
 
 import BN from 'bn.js';
 import React, { useCallback, useEffect, useState } from 'react';
+import styled from 'styled-components';
+import { registry } from '@polkadot/react-api';
 import { BN_ZERO, BN_TEN, formatBalance, isBn } from '@polkadot/util';
 
 import { classes } from './util';
 import { BitLengthOption } from './constants';
 import Dropdown from './Dropdown';
-import Input, { KEYS, KEYS_PRE } from './Input';
+import Input, { KEYS_PRE } from './Input';
 import { useTranslation } from './translate';
 
-interface Props extends BareProps {
+interface Props {
   autoFocus?: boolean;
   bitLength?: BitLength;
+  children?: React.ReactNode;
+  className?: string;
   defaultValue?: string;
   help?: React.ReactNode;
   isDisabled?: boolean;
@@ -25,6 +29,7 @@ interface Props extends BareProps {
   isFull?: boolean;
   isSi?: boolean;
   isDecimal?: boolean;
+  isWarning?: boolean;
   isZeroable?: boolean;
   label?: React.ReactNode;
   labelExtra?: React.ReactNode;
@@ -55,9 +60,11 @@ function getGlobalMaxValue (bitLength?: number): BN {
 }
 
 function getRegex (isDecimal: boolean): RegExp {
+  const decimal = '.';
+
   return new RegExp(
     isDecimal
-      ? `^(0|[1-9]\\d*)(\\${KEYS.DECIMAL}\\d*)?$`
+      ? `^(0|[1-9]\\d*)(\\${decimal}\\d*)?$`
       : '^(0|[1-9]\\d*)$'
   );
 }
@@ -114,7 +121,7 @@ function inputToBn (input: string, si: SiDef | null, bitLength: BitLength, isZer
     }
 
     const div = new BN(input.replace(/\.\d*$/, ''));
-    const modString = input.replace(/^\d+\./, '');
+    const modString = input.replace(/^\d+\./, '').substr(0, registry.chainDecimals);
     const mod = new BN(modString);
 
     result = div
@@ -159,7 +166,7 @@ function getValues (value: BN | string = BN_ZERO, si: SiDef | null, bitLength: B
     : getValuesFromString(value, si, bitLength, isZeroable, maxValue);
 }
 
-function InputNumber ({ autoFocus, bitLength = DEFAULT_BITLENGTH, children, className = '', defaultValue, help, isDecimal, isFull, isSi, isDisabled, isError = false, isZeroable = true, label, labelExtra, maxLength, maxValue, onChange, onEnter, onEscape, placeholder, value: propsValue }: Props): React.ReactElement<Props> {
+function InputNumber ({ autoFocus, bitLength = DEFAULT_BITLENGTH, children, className = '', defaultValue, help, isDecimal, isFull, isSi, isDisabled, isError = false, isWarning, isZeroable = true, label, labelExtra, maxLength, maxValue, onChange, onEnter, onEscape, placeholder, value: propsValue }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const [si, setSi] = useState<SiDef | null>(isSi ? formatBalance.findSi('-') : null);
   const [isPreKeyDown, setIsPreKeyDown] = useState(false);
@@ -242,12 +249,13 @@ function InputNumber ({ autoFocus, bitLength = DEFAULT_BITLENGTH, children, clas
   return (
     <Input
       autoFocus={autoFocus}
-      className={classes('ui--InputNumber', className)}
+      className={classes('ui--InputNumber', isDisabled && 'isDisabled', className)}
       help={help}
       isAction={isSi}
       isDisabled={isDisabled}
       isError={!isValid || isError}
       isFull={isFull}
+      isWarning={isWarning}
       label={label}
       labelExtra={labelExtra}
       maxLength={maxLength || maxValueLength}
@@ -275,4 +283,23 @@ function InputNumber ({ autoFocus, bitLength = DEFAULT_BITLENGTH, children, clas
   );
 }
 
-export default React.memo(InputNumber);
+export default React.memo(styled(InputNumber)`
+  &.isDisabled {
+    .ui--SiDropdown {
+      background: transparent;
+      border-color: rgba(34, 36, 38, .15) !important;
+      border-style: dashed;
+      color: #666 !important;
+      cursor: default !important;
+
+      .dropdown.icon {
+        display: none;
+      }
+    }
+  }
+
+  .ui.buttons+.ui--Toggle.isOverlay {
+    bottom: 1.1rem;
+    right: 6.5rem;
+  }
+`);

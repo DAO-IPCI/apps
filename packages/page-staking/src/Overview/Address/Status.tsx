@@ -2,6 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
+import BN from 'bn.js';
 import React from 'react';
 import { Badge, Icon } from '@polkadot/react-components';
 
@@ -9,30 +10,38 @@ import MaxBadge from '../../MaxBadge';
 
 interface Props {
   isElected: boolean;
+  isMain?: boolean;
   numNominators?: number;
-  onlineCount?: false | number;
+  onlineCount?: false | BN;
   onlineMessage?: boolean;
 }
 
-function Status ({ isElected, numNominators, onlineCount, onlineMessage }: Props): React.ReactElement<Props> {
+function Status ({ isElected, isMain, numNominators, onlineCount, onlineMessage }: Props): React.ReactElement<Props> {
+  const blockCount = onlineCount && onlineCount.toNumber();
+
   return (
-    <td className='together'>
-      {isElected && (
-        <Badge
-          info={<Icon name='chevron right' />}
-          isInline
-          type='next'
-        />
-      )}
-      {(!!onlineCount || onlineMessage) && (
-        <Badge
-          info={onlineCount || <Icon name='envelope' />}
-          isInline
-          type='online'
-        />
+    <>
+      {isElected
+        ? (
+          <Badge
+            color='blue'
+            icon='chevron-right'
+          />
+        )
+        : <Badge color='transparent' />
+      }
+      {isMain && (
+        blockCount || onlineMessage
+          ? (
+            <Badge
+              color='green'
+              info={blockCount || <Icon icon='envelope' />}
+            />
+          )
+          : <Badge color='transparent' />
       )}
       <MaxBadge numNominators={numNominators} />
-    </td>
+    </>
   );
 }
 

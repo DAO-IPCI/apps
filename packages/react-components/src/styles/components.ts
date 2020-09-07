@@ -11,10 +11,11 @@ export default css`
     border: 1px dashed #eee;
     box-sizing: border-box;
     line-height: 1rem;
-    margin: 0.25rem;
-    padding: .75rem 1rem;
+    max-height: 25rem;
+    overflow-y: auto;
+    padding: 0.75rem 1rem;
     position: relative;
-    word-wrap: break-word;
+    word-break: break-all;
 
     &.error {
       background: #fff6f6;
@@ -32,10 +33,6 @@ export default css`
     }
   }
 
-  .ui--Button-Group .button {
-    border-radius: .28571429rem !important;
-  }
-
   header .ui--Button-Group {
     text-align: center;
   }
@@ -44,7 +41,7 @@ export default css`
     margin: 0;
   }
 
-  button.ui.icon.icon-button {
+  button.u.ui--Icon.icon-button {
     padding-top: 0;
     padding-right: 0;
     padding-bottom: 0.3em;
@@ -95,19 +92,17 @@ export default css`
       }
     }
 
+    &.isWarning.ui.input {
+      > input,
+      input:focus {
+        background: #ffffe0;
+        border-color: #eeeeae;
+      }
+    }
+
     .ui--SiDropdown {
       width: 6rem;
       text-align: center;
-    }
-
-    .ui--MaxButton {
-      position: absolute;
-      right: 6.5rem;
-      top: 20%;
-      height: 60%;
-      text-transform: uppercase;
-      padding: 0 0.5rem !important;
-      border-radius: 0.3rem !important;
     }
   }
 

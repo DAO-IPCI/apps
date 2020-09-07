@@ -5,6 +5,7 @@
 /* eslint-disable camelcase */
 
 const TerserPlugin = require('terser-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 
 const ENV = process.env.NODE_ENV || 'production';
@@ -13,7 +14,10 @@ const isProd = ENV === 'production';
 function createWebpack () {
   return [
     {
-      entry: './src/electron.ts',
+      entry: {
+        electron: './src/electron',
+        preload: './src/preload.ts'
+      },
       mode: ENV,
       module: {
         rules: [
@@ -38,9 +42,12 @@ function createWebpack () {
         minimizer: [new TerserPlugin()]
       },
       output: {
-        filename: 'electron.js',
+        filename: '[name].js',
         path: path.join(__dirname, '/build')
       },
+      plugins: [
+        new CopyWebpackPlugin({ patterns: [{ from: 'assets' }] })
+      ],
       resolve: {
         extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
       },

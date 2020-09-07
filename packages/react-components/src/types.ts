@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { WithTranslation } from 'react-i18next';
-import { ButtonProps as SUIButtonProps } from 'semantic-ui-react/dist/commonjs/elements/Button/Button';
+import { IconName } from '@fortawesome/fontawesome-svg-core';
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 import { Abi } from '@polkadot/api-contract';
 import { ActionStatus } from '@polkadot/react-components/Status/types';
@@ -12,6 +12,8 @@ import { AccountId, Index } from '@polkadot/types/interfaces';
 import { ButtonProps } from './Button/types';
 import { InputAddressProps } from './InputAddress/types';
 import { TxCallback, TxFailedCallback } from './Status/types';
+
+export type StringOrNull = string | null;
 
 export type VoidFn = () => void;
 
@@ -31,11 +33,11 @@ export type I18nProps = BareProps & WithTranslation;
 
 export type ConstructTxFn = () => any[];
 
-export type TxTrigger = React.ComponentType<TxTriggerProps>;
-
 export interface TxTriggerProps {
   onOpen: () => void;
 }
+
+export type TxTrigger = React.ComponentType<TxTriggerProps>;
 
 export interface TxProps {
   extrinsic?: SubmittableExtrinsic | null;
@@ -55,13 +57,12 @@ export interface TxButtonProps extends TxProps {
   accountId?: AccountId | StringOrNull;
   accountNonce?: Index;
   className?: string;
-  icon?: string;
-  iconSize?: SUIButtonProps['size'];
+  icon?: IconName;
   isBasic?: boolean;
+  isBusy?: boolean;
   isDisabled?: boolean;
   isIcon?: boolean;
-  isNegative?: boolean;
-  isPrimary?: boolean;
+  isToplevel?: boolean;
   isUnsigned?: boolean;
   label?: React.ReactNode;
   onClick?: VoidFn;
@@ -70,8 +71,8 @@ export interface TxButtonProps extends TxProps {
   onStart?: VoidFn;
   onSuccess?: TxCallback;
   onUpdate?: TxCallback;
-  size?: SUIButtonProps['size'];
   tooltip?: string;
+  withoutLink?: boolean;
   withSpinner?: boolean;
 }
 
@@ -99,14 +100,12 @@ export interface TxModalProps extends I18nProps, TxState {
   inputAddressProps?: Pick<InputAddressProps, never>;
   cancelButtonLabel?: React.ReactNode;
   cancelButtonProps?: Pick<ButtonProps, never>;
-  submitButtonIcon?: string;
+  submitButtonIcon?: IconName;
   submitButtonLabel?: React.ReactNode;
   submitButtonProps?: Pick<TxButtonProps, never>;
 }
 
 export type BitLength = 8 | 16 | 32 | 64 | 128 | 256;
-
-export type StringOrNull = string | null;
 
 interface ContractBase {
   abi: Abi;

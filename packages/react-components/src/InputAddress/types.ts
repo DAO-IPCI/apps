@@ -3,11 +3,16 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { KeyringSectionOption, KeyringOption$Type } from '@polkadot/ui-keyring/options/types';
-import { BareProps } from '../types';
 
 import React from 'react';
 
-export interface InputAddressProps extends BareProps {
+export interface Option extends KeyringSectionOption {
+  className?: string;
+  text: React.ReactNode;
+}
+
+export interface InputAddressProps {
+  className?: string;
   defaultValue?: Uint8Array | string | null;
   help?: React.ReactNode;
   hideAddress?: boolean;
@@ -26,9 +31,4 @@ export interface InputAddressProps extends BareProps {
   value?: string | Uint8Array | string[] | null;
   withEllipsis?: boolean;
   withLabel?: boolean;
-}
-
-export interface Option extends KeyringSectionOption {
-  className?: string;
-  text: React.ReactNode;
 }
