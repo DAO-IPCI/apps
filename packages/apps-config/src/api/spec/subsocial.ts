@@ -1,10 +1,23 @@
-// Copyright 2017-2020 @polkadot/apps-config authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps-config authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import type { OverrideBundleDefinition } from '@polkadot/types/types';
 
 import * as subsocialDefinitions from '@subsocial/types/substrate/interfaces/definitions';
+
 import { typesFromDefs } from '../util';
 
-const subsocialTypes = typesFromDefs(subsocialDefinitions);
+// structs need to be in order
+/* eslint-disable sort-keys */
 
-export default subsocialTypes;
+const definitions: OverrideBundleDefinition = {
+  types: [
+    {
+      // on all versions
+      minmax: [0, undefined],
+      types: typesFromDefs(subsocialDefinitions)
+    }
+  ]
+};
+
+export default definitions;

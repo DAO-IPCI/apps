@@ -1,6 +1,5 @@
-// Copyright 2017-2020 @polkadot/app-parachains authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-components authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
 import styled from 'styled-components';
@@ -58,16 +57,13 @@ export default React.memo(styled(AvatarItem)`
         line-height: 2.4rem;
         margin-right: 0 !important;
       }
-
-      > img {
-      }
     }
 
     .ui--AvatarItem-details {
       flex: 1;
 
       .ui--AvatarItem-title {
-        font-weight: bold;
+        font-weight: var(--font-weight-normal);
         font-size: 1rem;
       }
 

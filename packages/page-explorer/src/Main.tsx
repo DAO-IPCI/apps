@@ -1,12 +1,12 @@
-// Copyright 2017-2020 @polkadot/app-explorer authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-explorer authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { KeyedEvent } from '@polkadot/react-query/types';
+import type { HeaderExtended } from '@polkadot/api-derive/types';
+import type { KeyedEvent } from '@polkadot/react-query/types';
 
 import React from 'react';
-import { HeaderExtended } from '@polkadot/api-derive';
-import { Columar, Column } from '@polkadot/react-components';
+
+import { Columar } from '@polkadot/react-components';
 
 import BlockHeaders from './BlockHeaders';
 import Events from './Events';
@@ -14,22 +14,23 @@ import Query from './Query';
 import Summary from './Summary';
 
 interface Props {
+  eventCount: number;
   events: KeyedEvent[];
   headers: HeaderExtended[];
 }
 
-function Main ({ events, headers }: Props): React.ReactElement<Props> {
+function Main ({ eventCount, events, headers }: Props): React.ReactElement<Props> {
   return (
     <>
       <Query />
-      <Summary />
+      <Summary eventCount={eventCount} />
       <Columar>
-        <Column>
+        <Columar.Column>
           <BlockHeaders headers={headers} />
-        </Column>
-        <Column>
+        </Columar.Column>
+        <Columar.Column>
           <Events events={events} />
-        </Column>
+        </Columar.Column>
       </Columar>
     </>
   );

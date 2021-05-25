@@ -1,9 +1,10 @@
-// Copyright 2017-2020 @polkadot/react-query authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-query authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import type { DeriveBalancesAll } from '@polkadot/api-derive/types';
 
 import React from 'react';
-import { DeriveBalancesAll } from '@polkadot/api-derive/types';
+
 import { InputBalance } from '@polkadot/react-components';
 import { useApi, useCall } from '@polkadot/react-hooks';
 
@@ -15,7 +16,7 @@ interface Props {
 
 function BalanceDisplay ({ className = '', label, params }: Props): React.ReactElement<Props> {
   const { api } = useApi();
-  const allBalances = useCall<DeriveBalancesAll>(api.derive.balances.all, [params]);
+  const allBalances = useCall<DeriveBalancesAll>(api.derive.balances?.all, [params]);
 
   return (
     <InputBalance

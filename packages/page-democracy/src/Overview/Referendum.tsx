@@ -1,17 +1,17 @@
-// Copyright 2017-2020 @polkadot/app-democracy authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-democracy authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { DeriveReferendumExt } from '@polkadot/api-derive/types';
-import { Balance, BlockNumber } from '@polkadot/types/interfaces';
+import type { DeriveReferendumExt } from '@polkadot/api-derive/types';
+import type { Balance } from '@polkadot/types/interfaces';
 
 import BN from 'bn.js';
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
+
 import { Badge, Button, Icon, LinkExternal } from '@polkadot/react-components';
-import { useAccounts, useApi, useCall } from '@polkadot/react-hooks';
+import { useAccounts, useApi, useBestNumber, useCall } from '@polkadot/react-hooks';
 import { BlockToTime } from '@polkadot/react-query';
-import { formatNumber, isBoolean } from '@polkadot/util';
+import { BN_ONE, formatNumber, isBoolean } from '@polkadot/util';
 
 import { useTranslation } from '../translate';
 import useChangeCalc from '../useChangeCalc';
@@ -40,8 +40,8 @@ function Referendum ({ className = '', value: { allAye, allNay, image, imageHash
   const { t } = useTranslation();
   const { api } = useApi();
   const { allAccounts } = useAccounts();
-  const bestNumber = useCall<BlockNumber>(api.derive.chain.bestNumber);
-  const totalIssuance = useCall<Balance>(api.query.balances.totalIssuance);
+  const bestNumber = useBestNumber();
+  const totalIssuance = useCall<Balance>(api.query.balances?.totalIssuance);
   const { changeAye, changeNay } = useChangeCalc(status.threshold, votedAye, votedNay, votedTotal);
   const threshold = useMemo(
     () => status.threshold.type.toString().replace('majority', ' majority '),
@@ -82,7 +82,7 @@ function Referendum ({ className = '', value: { allAye, allNay, image, imageHash
   }
 
   const enactBlock = status.end.add(status.delay);
-  const remainBlock = status.end.sub(bestNumber).subn(1);
+  const remainBlock = status.end.sub(bestNumber).isub(BN_ONE);
 
   return (
     <tr className={className}>
@@ -92,11 +92,11 @@ function Referendum ({ className = '', value: { allAye, allNay, image, imageHash
         proposal={image?.proposal}
       />
       <td className='number together media--1200'>
-        <BlockToTime blocks={remainBlock} />
+        <BlockToTime value={remainBlock} />
         {t<string>('{{blocks}} blocks', { replace: { blocks: formatNumber(remainBlock) } })}
       </td>
       <td className='number together media--1400'>
-        <BlockToTime blocks={enactBlock.sub(bestNumber)} />
+        <BlockToTime value={enactBlock.sub(bestNumber)} />
         #{formatNumber(enactBlock)}
       </td>
       <td className='number together media--1400'>
@@ -126,7 +126,6 @@ function Referendum ({ className = '', value: { allAye, allNay, image, imageHash
         <ReferendumVotes
           change={changeAye}
           count={voteCountAye}
-          index={index}
           isAye
           isWinning={isPassing}
           total={votedAye}
@@ -135,7 +134,6 @@ function Referendum ({ className = '', value: { allAye, allNay, image, imageHash
         <ReferendumVotes
           change={changeNay}
           count={voteCountNay}
-          index={index}
           isAye={false}
           isWinning={!isPassing}
           total={votedNay}

@@ -1,13 +1,14 @@
-// Copyright 2017-2020 @polkadot/app-staking authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-staking authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { SubmittableExtrinsic } from '@polkadot/api/types';
-import { SlashEra } from './types';
+import type { SubmittableExtrinsic } from '@polkadot/api/types';
+import type { SlashEra } from './types';
 
 import React, { useCallback, useRef, useState } from 'react';
+
 import { Button, Table, TxButton } from '@polkadot/react-components';
 import { useApi } from '@polkadot/react-hooks';
+import { isFunction } from '@polkadot/util';
 
 import { useTranslation } from '../translate';
 import Row from './Row';
@@ -20,10 +21,15 @@ interface Props {
   slash: SlashEra;
 }
 
+interface Proposal {
+  length: number;
+  proposal: SubmittableExtrinsic<'promise'>
+}
+
 interface Selected {
   selected: number[];
-  txAll: SubmittableExtrinsic<'promise'> | null;
-  txSome: SubmittableExtrinsic<'promise'> | null;
+  txAll: Proposal | null;
+  txSome: Proposal | null;
 }
 
 function Slashes ({ buttons, councilId, councilThreshold, slash }: Props): React.ReactElement<Props> | null {
@@ -32,7 +38,13 @@ function Slashes ({ buttons, councilId, councilThreshold, slash }: Props): React
   const [{ selected, txAll, txSome }, setSelected] = useState<Selected>((): Selected => {
     const proposal = api.tx.staking.cancelDeferredSlash(slash.era, slash.slashes.map((_, index) => index));
 
-    return { selected: [], txAll: api.tx.council?.propose(councilThreshold, proposal, proposal.encodedLength) || null, txSome: null };
+    return {
+      selected: [],
+      txAll: isFunction(api.tx.council?.propose)
+        ? { length: proposal.encodedLength, proposal }
+        : null,
+      txSome: null
+    };
   });
 
   const headerRef = useRef<[string?, string?, number?][]>([
@@ -53,11 +65,16 @@ function Slashes ({ buttons, councilId, councilThreshold, slash }: Props): React
       const proposal = selected.length
         ? api.tx.staking.cancelDeferredSlash(slash.era, selected)
         : null;
-      const txSome = proposal && api.tx.council?.propose(councilThreshold, proposal, proposal.encodedLength);
 
-      return { selected, txAll: state.txAll, txSome: txSome || null };
+      return {
+        selected,
+        txAll: state.txAll,
+        txSome: proposal && isFunction(api.tx.council?.propose)
+          ? { length: proposal.encodedLength, proposal }
+          : null
+      };
     }),
-    [api, councilThreshold, slash]
+    [api, slash]
   );
 
   return (
@@ -65,20 +82,34 @@ function Slashes ({ buttons, councilId, councilThreshold, slash }: Props): React
       <Summary slash={slash} />
       <Button.Group>
         {buttons}
-        <TxButton
-          accountId={councilId}
-          extrinsic={txSome}
-          isDisabled={!txSome}
-          isToplevel
-          label={t('Cancel selected')}
-        />
-        <TxButton
-          accountId={councilId}
-          extrinsic={txAll}
-          isDisabled={!txAll}
-          isToplevel
-          label={t('Cancel all')}
-        />
+        {isFunction(api.tx.council?.propose) && (
+          <>
+            <TxButton
+              accountId={councilId}
+              isDisabled={!txSome}
+              isToplevel
+              label={t('Cancel selected')}
+              params={txSome && (
+                api.tx.council.propose.meta.args.length === 3
+                  ? [councilThreshold, txSome.proposal, txSome.length]
+                  : [councilThreshold, txSome.proposal]
+              )}
+              tx={api.tx.council.propose}
+            />
+            <TxButton
+              accountId={councilId}
+              isDisabled={!txAll}
+              isToplevel
+              label={t('Cancel all')}
+              params={txAll && (
+                api.tx.council.propose.meta.args.length === 3
+                  ? [councilThreshold, txAll.proposal, txAll.length]
+                  : [councilThreshold, txAll.proposal]
+              )}
+              tx={api.tx.council.propose}
+            />
+          </>
+        )}
       </Button.Group>
       <Table header={headerRef.current}>
         {slash.slashes.map((slash, index): React.ReactNode => (

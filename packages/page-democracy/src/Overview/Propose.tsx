@@ -1,11 +1,11 @@
-// Copyright 2017-2020 @polkadot/app-democracy authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-democracy authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import BN from 'bn.js';
 import React, { useCallback, useState } from 'react';
+
 import { Input, InputAddress, InputBalance, Modal, TxButton } from '@polkadot/react-components';
-import { useApi } from '@polkadot/react-hooks';
+import { useApi, useCall } from '@polkadot/react-hooks';
 import { Available } from '@polkadot/react-query';
 import { isHex } from '@polkadot/util';
 
@@ -27,6 +27,7 @@ function Propose ({ className = '', onClose }: Props): React.ReactElement<Props>
   const [accountId, setAccountId] = useState<string | null>(null);
   const [balance, setBalance] = useState<BN | undefined>();
   const [{ hash, isHashValid }, setHash] = useState<HashState>({ hash: '', isHashValid: false });
+  const publicProps = useCall<unknown[]>(api.query.democracy.publicProps);
 
   const _onChangeHash = useCallback(
     (hash?: string): void => setHash({ hash, isHashValid: isHex(hash, 256) }),
@@ -42,69 +43,58 @@ function Propose ({ className = '', onClose }: Props): React.ReactElement<Props>
       size='large'
     >
       <Modal.Content>
-        <Modal.Columns>
-          <Modal.Column>
-            <InputAddress
-              help={t<string>('The account you want to register the proposal from')}
-              label={t<string>('send from account')}
-              labelExtra={
-                <Available
-                  label={<span className='label'>{t<string>('transferrable')}</span>}
-                  params={accountId}
-                />
-              }
-              onChange={setAccountId}
-              type='account'
-            />
-          </Modal.Column>
-          <Modal.Column>
-            <p>{t<string>('The proposal will be registered from this account and the balance lock will be applied here.')}</p>
-          </Modal.Column>
+        <Modal.Columns hint={t<string>('The proposal will be registered from this account and the balance lock will be applied here.')}>
+          <InputAddress
+            help={t<string>('The account you want to register the proposal from')}
+            label={t<string>('send from account')}
+            labelExtra={
+              <Available
+                label={<span className='label'>{t<string>('transferrable')}</span>}
+                params={accountId}
+              />
+            }
+            onChange={setAccountId}
+            type='account'
+          />
         </Modal.Columns>
-        <Modal.Columns>
-          <Modal.Column>
-            <Input
-              autoFocus
-              help={t<string>('The preimage hash of the proposal')}
-              label={t<string>('preimage hash')}
-              onChange={_onChangeHash}
-              value={hash}
-            />
-          </Modal.Column>
-          <Modal.Column>
-            <p>{t<string>('The hash of the preimage for the proposal as previously submitted or intended.')}</p>
-          </Modal.Column>
+        <Modal.Columns hint={t<string>('The hash of the preimage for the proposal as previously submitted or intended.')}>
+          <Input
+            autoFocus
+            help={t<string>('The preimage hash of the proposal')}
+            label={t<string>('preimage hash')}
+            onChange={_onChangeHash}
+            value={hash}
+          />
         </Modal.Columns>
-        <Modal.Columns>
-          <Modal.Column>
-            <InputBalance
-              defaultValue={api.consts.democracy.minimumDeposit}
-              help={t<string>('The locked value for this proposal')}
-              isError={!hasMinLocked}
-              label={t<string>('locked balance')}
-              onChange={setBalance}
-            />
-            <InputBalance
-              defaultValue={api.consts.democracy.minimumDeposit}
-              help={t<string>('The minimum deposit required')}
-              isDisabled
-              label={t<string>('minimum deposit')}
-            />
-          </Modal.Column>
-          <Modal.Column>
-            <p>{t<string>('The associated deposit for this proposal should be more then the minimum on-chain deposit required. It will be locked until the proposal passes.')}</p>
-          </Modal.Column>
+        <Modal.Columns hint={t<string>('The associated deposit for this proposal should be more then the minimum on-chain deposit required. It will be locked until the proposal passes.')}>
+          <InputBalance
+            defaultValue={api.consts.democracy.minimumDeposit}
+            help={t<string>('The locked value for this proposal')}
+            isError={!hasMinLocked}
+            label={t<string>('locked balance')}
+            onChange={setBalance}
+          />
+          <InputBalance
+            defaultValue={api.consts.democracy.minimumDeposit}
+            help={t<string>('The minimum deposit required')}
+            isDisabled
+            label={t<string>('minimum deposit')}
+          />
         </Modal.Columns>
       </Modal.Content>
       <Modal.Actions onCancel={onClose}>
         <TxButton
           accountId={accountId}
           icon='plus'
-          isDisabled={!balance || !hasMinLocked || !isHashValid || !accountId}
+          isDisabled={!balance || !hasMinLocked || !isHashValid || !accountId || !publicProps}
           label={t<string>('Submit proposal')}
           onStart={onClose}
-          params={[hash, balance]}
-          tx='democracy.propose'
+          params={
+            api.tx.democracy.propose.meta.args.length === 3
+              ? [hash, balance, publicProps?.length]
+              : [hash, balance]
+          }
+          tx={api.tx.democracy.propose}
         />
       </Modal.Actions>
     </Modal>

@@ -1,18 +1,18 @@
-// Copyright 2017-2020 @polkadot/app-poll authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-poll authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { Approvals, Balance, BlockNumber } from '@polkadot/types/interfaces';
-import { ITuple } from '@polkadot/types/types';
+import type { Approvals, Balance, BlockNumber } from '@polkadot/types/interfaces';
+import type { ITuple } from '@polkadot/types/types';
 
 import BN from 'bn.js';
 import React, { useEffect, useRef, useState } from 'react';
 import { Trans } from 'react-i18next';
 import styled from 'styled-components';
+
 import { Button, Columar, InputAddress, Progress, Spinner, Tabs, Toggle, TxButton } from '@polkadot/react-components';
-import { useApi, useCall } from '@polkadot/react-hooks';
-import { FormatBalance, BlockToTime } from '@polkadot/react-query';
-import { BN_ONE, BN_ZERO, bnMax, formatBalance, formatNumber } from '@polkadot/util';
+import { useApi, useBestNumber, useCallMulti } from '@polkadot/react-hooks';
+import { BlockToTime, FormatBalance } from '@polkadot/react-query';
+import { BN_MILLION, BN_ONE, BN_ZERO, bnMax, formatBalance, formatNumber } from '@polkadot/util';
 
 import { useTranslation } from './translate';
 
@@ -21,19 +21,25 @@ interface Props {
   className?: string;
 }
 
+type MultiResult = [Balance | undefined, [Balance, Balance, Balance, Balance] | undefined];
+
 interface Turnout {
   percentage: number;
   voted: BN;
 }
 
-const DIV = new BN(1_000_000);
+const optMulti = {
+  defaultValue: [undefined, undefined] as MultiResult
+};
 
 function PollApp ({ basePath, className }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const { api } = useApi();
-  const totals = useCall<ITuple<[Balance, Balance, Balance, Balance]>>(api.query.poll.totals);
-  const bestNumber = useCall<BlockNumber>(api.derive.chain.bestNumber);
-  const totalIssuance = useCall<Balance>(api.query.balances.totalIssuance);
+  const bestNumber = useBestNumber();
+  const [totalIssuance, totals] = useCallMulti<MultiResult>([
+    api.query.balances?.totalIssuance,
+    api.query.poll.totals
+  ], optMulti);
   const [accountId, setAccountId] = useState<string | null>(null);
   const [turnout, setTurnout] = useState<Turnout | null>(null);
   const [opt10m, setOpt10m] = useState(false);
@@ -52,7 +58,7 @@ function PollApp ({ basePath, className }: Props): React.ReactElement<Props> {
     if (totalIssuance && totals) {
       const max = bnMax(BN_ONE, ...totals);
 
-      setProgress(totals.map((total) => total.mul(DIV).div(max)));
+      setProgress(totals.map((total) => total.mul(BN_MILLION).div(max)));
 
       api.query.poll.voteOf
         .entries<ITuple<[Approvals, Balance]>>()
@@ -90,12 +96,10 @@ function PollApp ({ basePath, className }: Props): React.ReactElement<Props> {
 
   return (
     <main className={className}>
-      <header>
-        <Tabs
-          basePath={basePath}
-          items={itemsRef.current}
-        />
-      </header>
+      <Tabs
+        basePath={basePath}
+        items={itemsRef.current}
+      />
       <div className='pollContainer'>
         <div className='pollHeader'>
           <h1>{t('denomination vote')}</h1>
@@ -108,7 +112,7 @@ function PollApp ({ basePath, className }: Props): React.ReactElement<Props> {
             )}
             <div>
               {canVote
-                ? <BlockToTime blocks={blocksLeft} />
+                ? <BlockToTime value={blocksLeft} />
                 : t<string>('Completed')
               }
               <div>#{formatNumber(api.consts.poll.end as BlockNumber)}</div>
@@ -179,7 +183,7 @@ function PollApp ({ basePath, className }: Props): React.ReactElement<Props> {
                   isDisabled={!hasValue}
                   label={t('Vote')}
                   params={[[opt10m, opt100m, opt1b, opt10b]]}
-                  tx='poll.vote'
+                  tx={api.tx.poll.vote}
                 />
               </Button.Group>
             </>
@@ -257,7 +261,7 @@ export default React.memo(styled(PollApp)`
 
     .optionName {
       font-size: 1.2rem;
-      font-weight: 100;
+      font-weight: var(--font-weight-normal);
       line-height: 1;
       margin-bottom: 0.75rem;
     }
@@ -287,7 +291,7 @@ export default React.memo(styled(PollApp)`
 
     .ui--FormatBalance {
       font-size: 1.2rem;
-      font-weight: 100;
+      font-weight: var(--font-weight-normal);
       line-height: 1;
     }
 

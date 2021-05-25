@@ -1,11 +1,11 @@
-// Copyright 2017-2020 @polkadot/app-tech-comm authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-tech-comm authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { SubmittableExtrinsic } from '@polkadot/api/types';
+import type { SubmittableExtrinsic } from '@polkadot/api/types';
 
 import BN from 'bn.js';
 import React, { useCallback, useState } from 'react';
+
 import { Button, Extrinsic, InputAddress, InputNumber, Modal, TxButton } from '@polkadot/react-components';
 import { useApi, useModal } from '@polkadot/react-hooks';
 
@@ -14,6 +14,7 @@ import { useTranslation } from '../translate';
 interface Props {
   isMember: boolean;
   members: string[];
+  type: 'membership' | 'technicalCommittee';
 }
 
 interface ProposalState {
@@ -21,7 +22,7 @@ interface ProposalState {
   proposalLength: number;
 }
 
-function Propose ({ isMember, members }: Props): React.ReactElement<Props> {
+function Propose ({ isMember, members, type }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const { api, apiDefaultTxSudo } = useApi();
   const { isOpen, onClose, onOpen } = useModal();
@@ -87,11 +88,11 @@ function Propose ({ isMember, members }: Props): React.ReactElement<Props> {
               isDisabled={!hasThreshold || !proposal}
               onStart={onClose}
               params={
-                api.tx.technicalCommittee.propose.meta.args.length === 3
+                api.tx[type].propose.meta.args.length === 3
                   ? [threshold, proposal, proposalLength]
                   : [threshold, proposal]
               }
-              tx='technicalCommittee.propose'
+              tx={api.tx[type].propose}
             />
           </Modal.Actions>
         </Modal>

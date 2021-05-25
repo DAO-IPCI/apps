@@ -1,18 +1,18 @@
-// Copyright 2017-2020 @polkadot/app-tech-comm authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-tech-comm authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { Hash } from '@polkadot/types/interfaces';
-import { ComponentProps as Props } from '../types';
+import type { Hash } from '@polkadot/types/interfaces';
+import type { ComponentProps as Props } from '../types';
 
 import React, { useRef } from 'react';
+
 import { Button, Table } from '@polkadot/react-components';
 
 import { useTranslation } from '../translate';
 import Proposal from './Proposal';
 import Propose from './Propose';
 
-function Proposals ({ className = '', isMember, members, prime, proposals }: Props): React.ReactElement<Props> {
+function Proposals ({ className = '', isMember, members, prime, proposals, type }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
 
   const headerRef = useRef([
@@ -30,6 +30,7 @@ function Proposals ({ className = '', isMember, members, prime, proposals }: Pro
         <Propose
           isMember={isMember}
           members={members}
+          type={type}
         />
       </Button.Group>
       <Table
@@ -43,6 +44,7 @@ function Proposals ({ className = '', isMember, members, prime, proposals }: Pro
             key={hash.toHex()}
             members={members}
             prime={prime}
+            type={type}
           />
         ))}
       </Table>

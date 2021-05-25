@@ -1,8 +1,7 @@
-// Copyright 2017-2020 @polkadot/app-calendar authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-calendar authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { EntryInfo } from './types';
+import type { EntryInfoTyped } from './types';
 
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
@@ -15,23 +14,25 @@ interface Props {
   hour: number;
   index: number;
   minutes: number;
-  scheduled: EntryInfo[];
+  scheduled: EntryInfoTyped[];
 }
 
 const MN_TO_MS = 60 * 1000;
 const HR_TO_MS = 60 * MN_TO_MS;
 
+function filterEntries (date: Date, minutes: number, index: number, scheduled: EntryInfoTyped[]): EntryInfoTyped[] {
+  const start = date.getTime() + (index * HR_TO_MS);
+  const end = start + HR_TO_MS;
+  const explicit = start + (minutes * MN_TO_MS);
+
+  return scheduled
+    .filter(({ dateTime }) => dateTime >= explicit && dateTime < end)
+    .sort((a, b) => (a.dateTime - b.dateTime) || a.type.localeCompare(b.type));
+}
+
 function DayHour ({ className = '', date, hour, index, minutes, scheduled }: Props): React.ReactElement<Props> | null {
   const filtered = useMemo(
-    (): EntryInfo[] => {
-      const start = date.getTime() + (index * HR_TO_MS);
-      const end = start + HR_TO_MS;
-      const explicit = start + (minutes * MN_TO_MS);
-
-      return scheduled
-        .filter(({ dateTime }) => dateTime >= explicit && dateTime < end)
-        .sort((a, b) => (a.dateTime - b.dateTime) || a.type.localeCompare(b.type));
-    },
+    () => filterEntries(date, minutes, index, scheduled),
     [date, index, minutes, scheduled]
   );
 
@@ -58,12 +59,8 @@ export default React.memo(styled(DayHour)`
   position: relative;
   z-index: 2;
 
-  &:nth-child(even) {
-    background: #faf8f6;
-  }
-
   &:nth-child(odd) {
-    background: white;
+    background: var(--bg-table);
   }
 
   &.isPast {
@@ -78,7 +75,7 @@ export default React.memo(styled(DayHour)`
   .hourLabel {
     flex: 0;
     font-size: 0.85rem;
-    font-weight: 100;
+    font-weight: var(--font-weight-normal);
     line-height: 1;
     min-width: 5.5rem;
     opacity: 0.5;
@@ -90,7 +87,7 @@ export default React.memo(styled(DayHour)`
 
   &.hasItems .hourLabel {
     font-size: 1.1rem;
-    font-weight: normal;
+    font-weight: var(--font-weight-normal);
     opacity: 1;
     padding: 0.7rem 1rem;
   }

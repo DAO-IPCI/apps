@@ -1,9 +1,9 @@
-// Copyright 2017-2020 @polkadot/app-accounts authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-accounts authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
+
 import { Button, IdentityIcon } from '@polkadot/react-components';
 import { u8aToHex } from '@polkadot/util';
 
@@ -97,7 +97,7 @@ export default React.memo(styled(Match)`
 
   .vanity--Match-item {
     display: inline-block;
-    font-family: monospace;
+    font: var(--font-mono);
     margin: 0 auto;
     padding: 0.5em;
     position: relative;

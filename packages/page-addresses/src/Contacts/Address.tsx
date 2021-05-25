@@ -1,18 +1,19 @@
-// Copyright 2017-2020 @polkadot/app-addresses authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-addresses authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { DeriveAccountInfo, DeriveBalancesAll } from '@polkadot/api-derive/types';
-import { KeyringAddress } from '@polkadot/ui-keyring/types';
-import { ActionStatus } from '@polkadot/react-components/Status/types';
+import type { DeriveAccountInfo, DeriveBalancesAll } from '@polkadot/api-derive/types';
+import type { ActionStatus } from '@polkadot/react-components/Status/types';
+import type { ThemeDef } from '@polkadot/react-components/types';
+import type { KeyringAddress } from '@polkadot/ui-keyring/types';
 
-import React, { useCallback, useEffect, useState } from 'react';
-import styled from 'styled-components';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import styled, { ThemeContext } from 'styled-components';
+
 import Transfer from '@polkadot/app-accounts/modals/Transfer';
-import { AddressSmall, AddressInfo, Button, ChainLock, Icon, LinkExternal, Forget, Menu, Popup, Tags } from '@polkadot/react-components';
+import { AddressInfo, AddressSmall, Button, ChainLock, Forget, Icon, LinkExternal, Menu, Popup, Tags } from '@polkadot/react-components';
 import { useApi, useCall } from '@polkadot/react-hooks';
-import keyring from '@polkadot/ui-keyring';
-import { BN_ZERO, formatNumber } from '@polkadot/util';
+import { keyring } from '@polkadot/ui-keyring';
+import { BN_ZERO, formatNumber, isFunction } from '@polkadot/util';
 
 import { useTranslation } from '../translate';
 
@@ -30,9 +31,10 @@ const isEditable = true;
 
 function Address ({ address, className = '', filter, isFavorite, toggleFavorite }: Props): React.ReactElement<Props> | null {
   const { t } = useTranslation();
+  const { theme } = useContext<ThemeDef>(ThemeContext);
   const api = useApi();
   const info = useCall<DeriveAccountInfo>(api.api.derive.accounts.info, [address]);
-  const balancesAll = useCall<DeriveBalancesAll>(api.api.derive.balances.all, [address]);
+  const balancesAll = useCall<DeriveBalancesAll>(api.api.derive.balances?.all, [address]);
   const [tags, setTags] = useState<string[]>([]);
   const [accName, setAccName] = useState('');
   const [current, setCurrent] = useState<KeyringAddress | null>(null);
@@ -58,7 +60,7 @@ function Address ({ address, className = '', filter, isFavorite, toggleFavorite 
   useEffect((): void => {
     const { identity, nickname } = info || {};
 
-    if (api.api.query.identity && api.api.query.identity.identityOf) {
+    if (isFunction(api.api.query.identity?.identityOf)) {
       if (identity?.display) {
         setAccName(identity.display);
       }
@@ -195,7 +197,7 @@ function Address ({ address, className = '', filter, isFavorite, toggleFavorite 
         />
       </td>
       <td className='button'>
-        {api.api.tx.balances?.transfer && (
+        {isFunction(api.api.tx.balances?.transfer) && (
           <Button
             icon='paper-plane'
             key='send'
@@ -204,7 +206,7 @@ function Address ({ address, className = '', filter, isFavorite, toggleFavorite 
           />
         )}
         <Popup
-          className='theme--default'
+          className={`theme--${theme}`}
           isOpen={isSettingPopupOpen}
           onClose={_toggleSettingPopup}
           trigger={
@@ -225,13 +227,16 @@ function Address ({ address, className = '', filter, isFavorite, toggleFavorite 
             >
               {t<string>('Forget this address')}
             </Menu.Item>
-            <Menu.Divider />
-            <ChainLock
-              className='addresses--network-toggle'
-              genesisHash={genesisHash}
-              isDisabled={!isEditable || api.isDevelopment}
-              onChange={_onGenesisChange}
-            />
+            {isEditable && !api.isDevelopment && (
+              <>
+                <Menu.Divider />
+                <ChainLock
+                  className='addresses--network-toggle'
+                  genesisHash={genesisHash}
+                  onChange={_onGenesisChange}
+                />
+              </>
+            )}
           </Menu>
         </Popup>
       </td>

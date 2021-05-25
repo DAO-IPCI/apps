@@ -1,16 +1,17 @@
-// Copyright 2017-2020 @polkadot/app-calendar authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-calendar authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { DateState } from './types';
+import type { DateState } from './types';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
+
 import { Tabs } from '@polkadot/react-components';
 
 import Day from './Day';
 import Month from './Month';
 import { useTranslation } from './translate';
+import UpcomingEvents from './UpcomingEvents';
 import useScheduled from './useScheduled';
 import { getDateState, nextMonth, prevMonth } from './util';
 
@@ -24,8 +25,9 @@ const NOW_INC = 30 * 1000;
 function CalendarApp ({ basePath, className }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const scheduled = useScheduled();
-  const [now, setNow] = useState(new Date());
-  const [dateState, setDateState] = useState(getDateState(now, now));
+  const [now, setNow] = useState(() => new Date());
+  const [dateState, setDateState] = useState(() => getDateState(now, now));
+  const [allEventsView, setAllEventsView] = useState(false);
 
   const itemsRef = useRef([{
     isRoot: true,
@@ -107,14 +109,17 @@ function CalendarApp ({ basePath, className }: Props): React.ReactElement<Props>
     []
   );
 
+  const _setAllEventsView = useCallback(
+    (v) => setAllEventsView(v),
+    []
+  );
+
   return (
     <main className={className}>
-      <header>
-        <Tabs
-          basePath={basePath}
-          items={itemsRef.current}
-        />
-      </header>
+      <Tabs
+        basePath={basePath}
+        items={itemsRef.current}
+      />
       <div className='calendarFlex'>
         <Month
           hasNextMonth={hasNextMonth}
@@ -126,14 +131,28 @@ function CalendarApp ({ basePath, className }: Props): React.ReactElement<Props>
           setPrevMonth={_prevMonth}
           state={dateState}
         />
-        <Day
-          date={dateState.dateSelected}
-          hasNextDay={hasNextDay}
-          now={now}
-          scheduled={scheduled}
-          setNextDay={_nextDay}
-          setPrevDay={_prevDay}
-        />
+        <div className='wrapper-style'>
+          {allEventsView
+            ? (
+              <UpcomingEvents
+                className='upcoming-events'
+                scheduled={scheduled}
+                setView={_setAllEventsView}
+              />
+            )
+            : (
+              <Day
+                date={dateState.dateSelected}
+                hasNextDay={hasNextDay}
+                now={now}
+                scheduled={scheduled}
+                setNextDay={_nextDay}
+                setPrevDay={_prevDay}
+                setView={_setAllEventsView}
+              />
+            )
+          }
+        </div>
       </div>
     </main>
   );
@@ -145,15 +164,22 @@ export default React.memo(styled(CalendarApp)`
     display: flex;
     flex-wrap: nowrap;
 
+    .wrapper-style {
+      flex: 1;
+
+      .upcoming-events {
+        position: relative;
+        max-width: 100%;
+      }
+    }
+
     > div {
+      background-color: var(--bg-table);
+      border: 1px solid var(--border-table);
+      border-radius: 0.25rem;
+
       &+div {
         margin-left: 1.5rem;
-      }
-
-      > div {
-        background-color: #fff;
-        border: 1px solid #ddd;
-        border-radius: 0.25rem;
       }
 
       .ui--Button-Group {
@@ -163,9 +189,14 @@ export default React.memo(styled(CalendarApp)`
 
     h1 {
       align-items: center;
+      border-bottom: 0.25rem solid var(--bg-page);
       display: flex;
       justify-content: space-between;
-      padding: 0 0 0 1rem;
+      padding: 0.5rem 0.5rem 0 1rem;
+
+      .all-events-button {
+        margin-right: 1rem;
+      }
 
       .ui--Button {
         font-size: 1rem;

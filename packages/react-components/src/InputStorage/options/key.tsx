@@ -1,12 +1,13 @@
-// Copyright 2017-2020 @polkadot/react-components authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-components authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { DropdownOptions, DropdownOption } from '../../util/types';
+import type { StorageEntry } from '@polkadot/types/primitive/types';
+import type { DropdownOption, DropdownOptions } from '../../util/types';
 
 import React from 'react';
-import ApiPromise from '@polkadot/api/promise';
-import { StorageEntry, unwrapStorageType } from '@polkadot/types/primitive/StorageKey';
+
+import { ApiPromise } from '@polkadot/api';
+import { unwrapStorageType } from '@polkadot/types/primitive/StorageKey';
 
 export default function createOptions (api: ApiPromise, sectionName: string): DropdownOptions {
   const section = api.query[sectionName];
@@ -21,11 +22,13 @@ export default function createOptions (api: ApiPromise, sectionName: string): Dr
     .map((value): DropdownOption => {
       const method = section[value] as unknown as StorageEntry;
       const type = method.meta.type;
-      const input = type.isMap
-        ? type.asMap.key.toString()
-        : type.isDoubleMap
-          ? `${type.asDoubleMap.key1.toString()}, ${type.asDoubleMap.key2.toString()}`
-          : '';
+      const input = type.isPlain
+        ? ''
+        : type.isMap
+          ? type.asMap.key.toString()
+          : type.isDoubleMap
+            ? `${type.asDoubleMap.key1.toString()}, ${type.asDoubleMap.key2.toString()}`
+            : type.asNMap.keyVec.map((k) => k.toString()).join(', ');
       const output = method.meta.modifier.isOptional
         ? `Option<${unwrapStorageType(type)}>`
         : unwrapStorageType(type);

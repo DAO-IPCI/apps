@@ -1,12 +1,12 @@
-// Copyright 2017-2020 @polkadot/app-accounts authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-accounts authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import React, { useCallback } from 'react';
 import styled from 'styled-components';
-import { useAccountInfo, useToggle } from '@polkadot/react-hooks';
-import { colorLink } from '@polkadot/react-components/styles/theme';
+
 import { AccountName, Button, Icon, IdentityIcon, Input, LinkExternal, Sidebar, Tags } from '@polkadot/react-components';
+import { colorLink } from '@polkadot/react-components/styles/theme';
+import { useAccountInfo, useToggle } from '@polkadot/react-hooks';
 
 import Transfer from '../modals/Transfer';
 import { useTranslation } from '../translate';
@@ -102,7 +102,7 @@ function FullSidebar ({ address, className = '', onClose, onUpdateName }: Props)
           />
         </div>
         <Flags flags={flags} />
-        <div className='ui-AddressMenu--button'>
+        <div className='ui--AddressMenu-buttons'>
           <Button.Group>
             <Button
               icon='paper-plane'
@@ -125,7 +125,6 @@ function FullSidebar ({ address, className = '', onClose, onUpdateName }: Props)
             )}
             {!flags.isOwned && flags.isInContacts && (
               <Button
-                className='ui--AddressMenu-button'
                 icon='ban'
                 label={t<string>('Remove')}
                 onClick={_onForgetAddress}
@@ -167,8 +166,8 @@ export default React.memo(styled(FullSidebar)`
 
   .ui--AddressMenu-header {
     align-items: center;
-    background: white;
-    border-bottom: 1px solid #e6e6e6;
+    background: var(--bg-tabs);
+    border-bottom: 1px solid var(--border-table);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -177,12 +176,11 @@ export default React.memo(styled(FullSidebar)`
   }
 
   .ui--AddressMenu-addr {
-    font-family: monospace;
-    margin: 0.5rem 0;
-    overflow: hidden;
+    font: var(--font-mono);
+    margin: 0.75rem 0;
     text-align: center;
-    text-overflow: ellipsis;
-    width: 100%;
+    word-break: break-all;
+    width: 26ch;
   }
 
   .ui--AddressMenu-addr+.ui--AddressMenu-addr {
@@ -196,7 +194,7 @@ export default React.memo(styled(FullSidebar)`
 
     .ui--AddressMenu-sectionHeader {
       display: inline-flex;
-      color: #aaa;
+      color: var(--color-text);
       margin-bottom: 0.4rem;
       width: 100%;
 
@@ -217,7 +215,7 @@ export default React.memo(styled(FullSidebar)`
         width: 100%;
 
         .th {
-          font-weight: bold;
+          font-weight: var(--font-weight-normal);
           text-align: right;
           flex-basis: 20%;
 
@@ -240,9 +238,15 @@ export default React.memo(styled(FullSidebar)`
     }
   }
 
+  .ui--AddressMenu-buttons {
+    .ui--Button-Group {
+      margin-bottom: 0;
+    }
+  }
+
   .ui--AddressMenu-tags,
   .ui--AddressMenu-flags {
-    margin-bottom: 0.75rem;
+    margin: 0.75rem 0 0;
   }
 
   .ui--AddressMenu-flags {

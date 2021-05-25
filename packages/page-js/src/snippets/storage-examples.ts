@@ -1,8 +1,7 @@
-// Copyright 2017-2020 @polkadot/app-js authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-js authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { Snippet } from '@polkadot/app-js/types';
+import type { Snippet } from '@polkadot/app-js/types';
 
 const label = {
   children: 'Storage',
@@ -113,19 +112,19 @@ export const storageRetrieveInfoOnQueryKeys: Snippet = {
 const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 
 // retrieve the balance, once-off at the latest block
-const [nonce, { free }] = await api.query.system.account(ALICE);
+const { data: { free } } = await api.query.system.account(ALICE);
 
 console.log('Alice has a current balance of', free.toHuman());
 
 // retrieve balance updates with an optional value callback
-const balanceUnsub = await api.query.system.account(ALICE, ([, { free }]) => {
+const balanceUnsub = await api.query.system.account(ALICE, ({ data: { free } }) => {
   console.log('Alice has an updated balance of', free.toHuman());
 });
 
 // retrieve the balance at a block hash in the past
 const header = await api.rpc.chain.getHeader();
-const prevHash = await api.rpc.chain.getBlockHash(header.blockNumber.subn(42));
-const [, { free: prev }] = await api.query.system.account.at(prevHash, ALICE);
+const prevHash = await api.rpc.chain.getBlockHash(header.number.unwrap().subn(42));
+const { data: { free: prev } } = await api.query.system.account.at(prevHash, ALICE);
 
 console.log('Alice had a balance of', prev.toHuman(), '(42 blocks ago)');
 
@@ -135,7 +134,7 @@ const currSize = await api.query.system.account.size(ALICE);
 
 console.log('Alice account entry has a value hash of', currHash, 'with a size of', currSize);`,
   label,
-  text: 'Retrieve historic query datas',
+  text: 'Retrieve historic query data',
   value: 'storageRetrieveInfoOnQueryKeys'
 };
 

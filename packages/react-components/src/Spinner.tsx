@@ -1,16 +1,16 @@
-// Copyright 2017-2020 @polkadot/app-staking authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-staking authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
 import styled from 'styled-components';
 
-import { useTranslation } from './translate';
 import spinnerSrc from './Spinner.png';
+import { useTranslation } from './translate';
 
 interface Props {
   className?: string;
   label?: React.ReactNode;
+  noLabel?: boolean;
   variant?: 'app' | 'cover' | 'push' | 'mini';
 }
 
@@ -19,7 +19,7 @@ const img = new Image();
 
 img.src = spinnerSrc as string;
 
-function Spinner ({ className = '', label, variant = 'app' }: Props): React.ReactElement<Props> | null {
+function Spinner ({ className = '', label, noLabel, variant = 'app' }: Props): React.ReactElement<Props> | null {
   const { t } = useTranslation();
 
   return (
@@ -28,14 +28,14 @@ function Spinner ({ className = '', label, variant = 'app' }: Props): React.Reac
         className={variant === 'push' ? '' : 'highlight--bg highlight--border'}
         src={spinnerSrc as string}
       />
-      {variant === 'app' && <div className='text'>{label || t('Retrieving data')}</div>}
+      {!noLabel && variant === 'app' && <div className='text'>{label || t('Retrieving data')}</div>}
     </div>
   );
 }
 
 export default React.memo(styled(Spinner)`
   display: block;
-  line-height: 1;
+  line-height: 1rem;
   margin: 0 auto;
   text-align: center;
 
@@ -60,5 +60,9 @@ export default React.memo(styled(Spinner)`
     color: inherit !important;
     margin: 0.25rem auto 1.5rem auto;
     opacity: 0.6;
+
+    div+div {
+      margin-top: 0.25rem;
+    }
   }
 `);

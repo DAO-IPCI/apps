@@ -1,8 +1,7 @@
-// Copyright 2017-2020 @polkadot/app-claims authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-claims authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { StatementKind } from '@polkadot/types/interfaces';
+import type { StatementKind } from '@polkadot/types/interfaces';
 
 import React from 'react';
 import styled from 'styled-components';
@@ -68,7 +67,7 @@ export default React.memo(styled(Statement)`
     white-space: normal;
 
     p {
-      color: #4e4e4e !important;
+      color: var(--color-text) !important;
     }
 
     iframe {

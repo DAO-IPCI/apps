@@ -1,8 +1,7 @@
-// Copyright 2017-2020 @polkadot/app-calendar authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-calendar authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { EntryInfo } from './types';
+import type { EntryInfo } from './types';
 
 import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';

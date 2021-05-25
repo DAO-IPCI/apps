@@ -1,11 +1,11 @@
-// Copyright 2017-2020 @polkadot/app-js authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-js authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { Log } from './types';
+import type { Log } from './types';
 
 import React from 'react';
 import styled from 'styled-components';
+
 import { isError, isNull, isUndefined } from '@polkadot/util';
 
 interface Props {
@@ -60,8 +60,7 @@ export default React.memo(styled(Output)`
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  font-family: monospace;
-  font-size: 12px;
+  font: var(--font-mono);
   font-variant-ligatures: common-ligatures;
   line-height: 18px;
   padding: 50px 10px 10px;
@@ -71,7 +70,7 @@ export default React.memo(styled(Output)`
   .logs-wrapper {
     display: flex;
     flex: 1;
-    min-height: 0px;
+    min-height: 0;
   }
 
   .logs-container {

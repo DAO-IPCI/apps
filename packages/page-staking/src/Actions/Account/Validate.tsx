@@ -1,10 +1,10 @@
-// Copyright 2017-2020 @polkadot/app-staking authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-staking authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { ValidateInfo } from '../partials/types';
+import type { ValidateInfo } from '../partials/types';
 
 import React, { useState } from 'react';
+
 import { Modal, TxButton } from '@polkadot/react-components';
 
 import { useTranslation } from '../../translate';
@@ -30,6 +30,7 @@ function Validate ({ controllerId, onClose, stashId }: Props): React.ReactElemen
           controllerId={controllerId}
           onChange={setTx}
           stashId={stashId}
+          withFocus
           withSenders
         />
       </Modal.Content>

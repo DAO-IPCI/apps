@@ -1,10 +1,8 @@
-// Copyright 2017-2020 @polkadot/apps-config authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps-config authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import * as laminarDefinitions from '@laminar/type-definitions';
-import { typesFromDefs } from '../util';
+import type { OverrideBundleDefinition } from '@polkadot/types/types';
 
-const lamiTypes = typesFromDefs(laminarDefinitions);
+import { typesBundleForPolkadot } from '@laminar/type-definitions';
 
-export default lamiTypes;
+export default typesBundleForPolkadot.spec.laminar as unknown as OverrideBundleDefinition;

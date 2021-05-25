@@ -1,20 +1,20 @@
-// Copyright 2017-2020 @polkadot/app-democracy authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-democracy authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { DeriveReferendumExt } from '@polkadot/api-derive/types';
+import type { DeriveReferendumExt } from '@polkadot/api-derive/types';
 
 import React from 'react';
+
 import { Button } from '@polkadot/react-components';
 import { useApi, useCall, useToggle } from '@polkadot/react-hooks';
 
 import { useTranslation } from '../translate';
 import Externals from './Externals';
+import PreImage from './PreImage';
 import Proposals from './Proposals';
+import Propose from './Propose';
 import Referendums from './Referendums';
 import Summary from './Summary';
-import PreImage from './PreImage';
-import Propose from './Propose';
 
 interface Props {
   className?: string;

@@ -1,16 +1,13 @@
-// Copyright 2017-2020 @polkadot/react-hooks authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
-
-import { StringOrNull } from '@polkadot/react-components/types';
+// Copyright 2017-2021 @polkadot/react-hooks authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import { useCallback, useState } from 'react';
 
-export default function useAccountId (initialValue: StringOrNull = null, onChangeAccountId?: (_: StringOrNull) => void): [StringOrNull, (_: StringOrNull) => void] {
-  const [accountId, setAccountId] = useState<StringOrNull>(initialValue);
+export function useAccountId (initialValue: string | null = null, onChangeAccountId?: (_: string | null) => void): [string | null, (_: string | null) => void] {
+  const [accountId, setAccountId] = useState<string | null>(initialValue);
 
   const _setAccountId = useCallback(
-    (accountId: StringOrNull = null): void => {
+    (accountId: string | null = null): void => {
       setAccountId(accountId);
 
       onChangeAccountId && onChangeAccountId(accountId);

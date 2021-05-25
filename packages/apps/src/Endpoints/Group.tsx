@@ -1,16 +1,17 @@
-// Copyright 2017-2020 @polkadot/apps authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { Group } from './types';
+import type { Group } from './types';
 
 import React, { useCallback } from 'react';
 import styled from 'styled-components';
+
 import { Icon } from '@polkadot/react-components';
 
 import Network from './Network';
 
 interface Props {
+  affinities: Record<string, string>;
   apiUrl: string;
   children?: React.ReactNode;
   className?: string;
@@ -21,7 +22,7 @@ interface Props {
   value: Group;
 }
 
-function GroupDisplay ({ apiUrl, children, className = '', index, isSelected, setApiUrl, setGroup, value: { header, networks } }: Props): React.ReactElement<Props> {
+function GroupDisplay ({ affinities, apiUrl, children, className = '', index, isSelected, setApiUrl, setGroup, value: { header, isSpaced, networks } }: Props): React.ReactElement<Props> {
   const _setGroup = useCallback(
     () => setGroup(isSelected ? -1 : index),
     [index, isSelected, setGroup]
@@ -30,7 +31,7 @@ function GroupDisplay ({ apiUrl, children, className = '', index, isSelected, se
   return (
     <div className={`${className}${isSelected ? ' isSelected' : ''}`}>
       <div
-        className='groupHeader'
+        className={`groupHeader${isSpaced ? ' isSpaced' : ''}`}
         onClick={_setGroup}
       >
         <Icon icon={isSelected ? 'caret-up' : 'caret-down'} />
@@ -41,6 +42,7 @@ function GroupDisplay ({ apiUrl, children, className = '', index, isSelected, se
           <div className='groupNetworks'>
             {networks.map((network, index): React.ReactNode => (
               <Network
+                affinity={affinities[network.name]}
                 apiUrl={apiUrl}
                 key={index}
                 setApiUrl={setApiUrl}
@@ -65,7 +67,11 @@ export default React.memo(styled(GroupDisplay)`
     text-transform: uppercase;
 
     &:hover {
-      background: white;
+      background: var(--bg-table);
+    }
+
+    &.isSpaced {
+      margin-top: 0.75rem;
     }
 
     .ui--Icon {

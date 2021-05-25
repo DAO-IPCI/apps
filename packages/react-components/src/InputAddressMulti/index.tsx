@@ -1,14 +1,14 @@
-// Copyright 2017-2020 @polkadot/react-components authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-components authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
+
 import { useDebounce, useLoadingDelay } from '@polkadot/react-hooks';
 
-import { useTranslation } from '../translate';
 import Input from '../Input';
 import Spinner from '../Spinner';
+import { useTranslation } from '../translate';
 import Available from './Available';
 import Selected from './Selected';
 
@@ -136,7 +136,7 @@ export default React.memo(styled(InputAddressMulti)`
 
       .ui--InputAddressMulti-items {
         padding: 0.5rem 0;
-        background: white;
+        background: var(--bg-input);
         border: 1px solid rgba(34,36,38,0.15);
         border-radius: 0.286rem 0.286rem;
         flex: 1;
@@ -153,6 +153,10 @@ export default React.memo(styled(InputAddressMulti)`
 
         .ui--AddressMini-address {
           min-width: auto;
+          max-width: 100%;
+        }
+
+        .ui--AddressMini-info {
           max-width: 100%;
         }
       }

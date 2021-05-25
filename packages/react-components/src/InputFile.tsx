@@ -1,30 +1,33 @@
-// Copyright 2017-2020 @polkadot/react-components authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-components authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import React, { useCallback, useState, createRef } from 'react';
+import React, { createRef, useCallback, useState } from 'react';
 import Dropzone, { DropzoneRef } from 'react-dropzone';
 import styled from 'styled-components';
-import { formatNumber, isHex, u8aToString, hexToU8a } from '@polkadot/util';
 
-import { classes } from './util';
+import { formatNumber, hexToU8a, isHex, u8aToString } from '@polkadot/util';
+
 import Labelled from './Labelled';
 import { useTranslation } from './translate';
 
-export interface InputFileProps {
-  // Reference Example Usage: https://github.com/react-dropzone/react-dropzone/tree/master/examples/Accept
-  // i.e. MIME types: 'application/json, text/plain', or '.json, .txt'
-  accept?: string;
+export interface InputFilePropsBase {
   className?: string;
   clearContent?: boolean;
   help?: React.ReactNode;
   isDisabled?: boolean;
   isError?: boolean;
+  isFull?: boolean;
   label: React.ReactNode;
-  onChange?: (contents: Uint8Array, name: string) => void;
-  placeholder?: React.ReactNode | null;
+  placeholder?: React.ReactNode | null | false;
   withEllipsis?: boolean;
   withLabel?: boolean;
+}
+
+export interface InputFileProps extends InputFilePropsBase {
+  // Reference Example Usage: https://github.com/react-dropzone/react-dropzone/tree/master/examples/Accept
+  // i.e. MIME types: 'application/json, text/plain', or '.json, .txt'
+  accept?: string;
+  onChange?: (contents: Uint8Array, name: string) => void;
 }
 
 interface FileState {
@@ -56,7 +59,7 @@ function convertResult (result: ArrayBuffer): Uint8Array {
   return data;
 }
 
-function InputFile ({ accept, className = '', clearContent, help, isDisabled, isError = false, label, onChange, placeholder, withEllipsis, withLabel }: InputFileProps): React.ReactElement<InputFileProps> {
+function InputFile ({ accept, className = '', clearContent, help, isDisabled, isError = false, isFull, label, onChange, placeholder, withEllipsis, withLabel }: InputFileProps): React.ReactElement<InputFileProps> {
   const { t } = useTranslation();
   const dropRef = createRef<DropzoneRef>();
   const [file, setFile] = useState<FileState | undefined>();
@@ -97,7 +100,7 @@ function InputFile ({ accept, className = '', clearContent, help, isDisabled, is
       ref={dropRef}
     >
       {({ getInputProps, getRootProps }): JSX.Element => (
-        <div {...getRootProps({ className: classes('ui--InputFile', isError ? 'error' : '', className) })} >
+        <div {...getRootProps({ className: `ui--InputFile${isError ? ' error' : ''} ${className}` })} >
           <input {...getInputProps()} />
           <em className='label' >
             {
@@ -120,6 +123,7 @@ function InputFile ({ accept, className = '', clearContent, help, isDisabled, is
     ? (
       <Labelled
         help={help}
+        isFull={isFull}
         label={label}
         withEllipsis={withEllipsis}
         withLabel={withLabel}
@@ -131,7 +135,7 @@ function InputFile ({ accept, className = '', clearContent, help, isDisabled, is
 }
 
 export default React.memo(styled(InputFile)`
-  background: #fff;
+  background: var(--bg-input);
   border: 1px solid rgba(34, 36, 38, 0.15);
   border-radius: 0.28571429rem;
   font-size: 1rem;
@@ -140,16 +144,11 @@ export default React.memo(styled(InputFile)`
   width: 100% !important;
 
   &.error {
-    background: #fff6f6;
+    background: var(--bg-input-error);
     border-color: #e0b4b4;
   }
 
   &:hover {
-    background: #fefefe;
     cursor: pointer;
-  }
-
-  .label {
-    color: rgba(0, 0, 0, .6);
   }
 `);

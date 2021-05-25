@@ -1,8 +1,7 @@
-// Copyright 2017-2020 @polkadot/app-society authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-society authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { VoteSplit, VoteType } from '../types';
+import type { VoteSplit, VoteType } from '../types';
 
 import React, { useEffect, useState } from 'react';
 
@@ -19,14 +18,14 @@ function Votes ({ votes }: Props): React.ReactElement<Props> {
 
   useEffect((): void => {
     votes && setVoteSplit({
-      allAye: votes.filter(([, vote]): boolean => vote.isApprove),
-      allNay: votes.filter(([, vote]): boolean => vote.isReject),
-      allSkeptic: votes.filter(([, vote]): boolean => vote.isSkeptic)
+      allAye: votes.filter(([, vote]) => vote.isApprove),
+      allNay: votes.filter(([, vote]) => vote.isReject),
+      allSkeptic: votes.filter(([, vote]) => vote.isSkeptic)
     });
   }, [votes]);
 
   return (
-    <td className='start'>
+    <td className='expand'>
       <VotesExpander
         label={t<string>('Skeptics')}
         votes={allSkeptic}

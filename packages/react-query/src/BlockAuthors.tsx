@@ -1,11 +1,11 @@
-// Copyright 2017-2020 @polkadot/react-query authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-query authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { EraRewardPoints } from '@polkadot/types/interfaces';
+import type { HeaderExtended } from '@polkadot/api-derive/types';
+import type { EraRewardPoints } from '@polkadot/types/interfaces';
 
 import React, { useEffect, useState } from 'react';
-import { HeaderExtended } from '@polkadot/api-derive';
+
 import { useApi, useCall } from '@polkadot/react-hooks';
 import { formatNumber } from '@polkadot/util';
 

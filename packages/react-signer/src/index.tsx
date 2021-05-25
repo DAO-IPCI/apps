@@ -1,27 +1,31 @@
-// Copyright 2017-2020 @polkadot/react-signer authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-signer authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { QueueTx, QueueTxMessageSetStatus, QueueTxResult } from '@polkadot/react-components/Status/types';
-import { BareProps as Props } from '@polkadot/react-components/types';
-import { DefinitionRpcExt } from '@polkadot/types/types';
+import type { QueueTx, QueueTxMessageSetStatus, QueueTxResult } from '@polkadot/react-components/Status/types';
+import type { BareProps as Props } from '@polkadot/react-components/types';
+import type { DefinitionRpcExt } from '@polkadot/types/types';
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
+
 import { ApiPromise } from '@polkadot/api';
 import { Modal, StatusContext } from '@polkadot/react-components';
 import { useApi } from '@polkadot/react-hooks';
-import { assert, isFunction } from '@polkadot/util';
-import { format } from '@polkadot/util/logger';
+import { assert, isFunction, loggerFormat } from '@polkadot/util';
 
 import { useTranslation } from './translate';
 import TxSigned from './TxSigned';
 import TxUnsigned from './TxUnsigned';
 
 interface ItemState {
+  count: number;
   currentItem: QueueTx | null;
+  isRpc: boolean;
+  isVisible: boolean;
   requestAddress: string | null;
 }
+
+const AVAIL_STATUS = ['queued', 'qr', 'signing'];
 
 async function submitRpc (api: ApiPromise, { method, section }: DefinitionRpcExt, values: any[]): Promise<QueueTxResult> {
   try {
@@ -31,7 +35,7 @@ async function submitRpc (api: ApiPromise, { method, section }: DefinitionRpcExt
 
     const result = await rpc[section][method](...values);
 
-    console.log('submitRpc: result ::', format(result));
+    console.log('submitRpc: result ::', loggerFormat(result));
 
     return {
       result,
@@ -58,19 +62,25 @@ async function sendRpc (api: ApiPromise, queueSetTxStatus: QueueTxMessageSetStat
   }
 }
 
-function extractCurrent (api: ApiPromise, queueSetTxStatus: QueueTxMessageSetStatus, txqueue: QueueTx[]): ItemState {
-  const nextItem = txqueue.find(({ status }) => ['queued', 'qr'].includes(status)) || null;
-  let currentItem = null;
+function extractCurrent (txqueue: QueueTx[]): ItemState {
+  const available = txqueue.filter(({ status }) => AVAIL_STATUS.includes(status));
+  const currentItem = available[0] || null;
+  let isRpc = false;
+  let isVisible = false;
 
-  // when the next up is an RPC, send it immediately
-  if (nextItem && nextItem.status === 'queued' && !(nextItem.extrinsic || nextItem.payload)) {
-    sendRpc(api, queueSetTxStatus, nextItem).catch(console.error);
-  } else {
-    currentItem = nextItem;
+  if (currentItem) {
+    if (currentItem.status === 'queued' && !(currentItem.extrinsic || currentItem.payload)) {
+      isRpc = true;
+    } else if (currentItem.status !== 'signing') {
+      isVisible = true;
+    }
   }
 
   return {
+    count: available.length,
     currentItem,
+    isRpc,
+    isVisible,
     requestAddress: (currentItem && currentItem.accountId) || null
   };
 }
@@ -79,19 +89,24 @@ function Signer ({ children, className = '' }: Props): React.ReactElement<Props>
   const { api } = useApi();
   const { t } = useTranslation();
   const { queueSetTxStatus, txqueue } = useContext(StatusContext);
-  const [{ currentItem, requestAddress }, setItem] = useState<ItemState>({ currentItem: null, requestAddress: null });
+
+  const { count, currentItem, isRpc, isVisible, requestAddress } = useMemo(
+    () => extractCurrent(txqueue),
+    [txqueue]
+  );
 
   useEffect((): void => {
-    setItem(extractCurrent(api, queueSetTxStatus, txqueue));
-  }, [api, queueSetTxStatus, txqueue]);
+    isRpc && currentItem &&
+      sendRpc(api, queueSetTxStatus, currentItem).catch(console.error);
+  }, [api, isRpc, currentItem, queueSetTxStatus]);
 
   return (
     <>
       {children}
-      {currentItem && (
+      {currentItem && isVisible && (
         <Modal
           className={className}
-          header={t('Authorize transaction')}
+          header={<>{t('Authorize transaction')}{(count === 1) ? undefined : <>&nbsp;1/{count}</>}</>}
           key={currentItem.id}
           size='large'
         >

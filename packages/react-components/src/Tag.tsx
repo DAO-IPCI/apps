@@ -1,6 +1,5 @@
-// Copyright 2017-2020 @polkadot/react-components authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-components authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import React, { useState } from 'react';
 import styled from 'styled-components';
@@ -9,7 +8,7 @@ import Tooltip from './Tooltip';
 
 interface Props {
   className?: string;
-  color?: 'blue' | 'green' | 'grey' | 'orange' | 'pink' | 'red' | 'yellow';
+  color?: 'blue' | 'green' | 'grey' | 'orange' | 'pink' | 'red' | 'yellow' | 'theme';
   hover?: React.ReactNode;
   isTag?: boolean;
   label: React.ReactNode;
@@ -19,14 +18,14 @@ interface Props {
 let tagId = 0;
 
 function Tag ({ className = '', color = 'grey', hover, isTag = true, label, size = 'small' }: Props): React.ReactElement<Props> {
-  const [trigger] = useState(`tag-hover-${Date.now()}-${tagId++}`);
+  const [trigger] = useState(() => `tag-hover-${Date.now()}-${tagId++}`);
   const tooltipProps = hover
     ? { 'data-for': trigger, 'data-tip': true }
     : {};
 
   return (
     <div
-      className={`${color}Color${isTag ? ' isTag' : ''} ${size}Size ${className}`}
+      className={`${color === 'theme' ? 'highlight--color-bg highlight--bg' : ''} ${color}Color${isTag ? ' isTag' : ''} ${size}Size ${className}`}
       color={color || 'grey'}
       {...tooltipProps}
     >
@@ -46,9 +45,9 @@ export default React.memo(styled(Tag)`
   color: #fff;
   display: inline-block;
   font-size: 0.78571429rem;
-  font-weight: normal;
+  font-weight: var(--font-weight-normal);
   line-height: 1;
-  margin: 0.125rem;
+  margin: 0 0.125rem;
   padding: 0.5833em 0.833em;
   position: relative;
   white-space: nowrap;

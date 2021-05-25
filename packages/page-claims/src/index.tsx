@@ -1,26 +1,26 @@
-// Copyright 2017-2020 @polkadot/app-claims authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-claims authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { AppProps as Props } from '@polkadot/react-components/types';
-import { Option } from '@polkadot/types';
-import { EcdsaSignature, EthereumAddress, StatementKind } from '@polkadot/types/interfaces';
+import type { AppProps as Props } from '@polkadot/react-components/types';
+import type { Option } from '@polkadot/types';
+import type { EcdsaSignature, EthereumAddress, StatementKind } from '@polkadot/types/interfaces';
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import CopyToClipboard from 'react-copy-to-clipboard';
 import { Trans } from 'react-i18next';
 import styled from 'styled-components';
-import CopyToClipboard from 'react-copy-to-clipboard';
-import { Button, Card, Columar, Column, Input, InputAddress, Tabs, Tooltip } from '@polkadot/react-components';
-import { useApi, useCall } from '@polkadot/react-hooks';
+
+import { Button, Card, Columar, Input, InputAddress, Tabs, Tooltip } from '@polkadot/react-components';
 import { TokenUnit } from '@polkadot/react-components/InputNumber';
+import { useApi, useCall } from '@polkadot/react-hooks';
 import { u8aToHex, u8aToString } from '@polkadot/util';
 import { decodeAddress } from '@polkadot/util-crypto';
 
-import { useTranslation } from './translate';
-import { recoverFromJSON, getStatement } from './util';
 import AttestDisplay from './Attest';
 import ClaimDisplay from './Claim';
 import Statement from './Statement';
+import { useTranslation } from './translate';
+import { getStatement, recoverFromJSON } from './util';
 import Warning from './Warning';
 
 export { default as useCounter } from './useCounter';
@@ -37,7 +37,7 @@ const PRECLAIMS_LOADING = 'PRECLAIMS_LOADING';
 // FIXME no embedded components (hossible to tweak)
 const Payload = styled.pre`
   cursor: copy;
-  font-family: monospace;
+  font: var(--font-mono);
   border: 1px dashed #c2c2c2;
   background: #f2f2f2;
   padding: 1rem;
@@ -48,7 +48,7 @@ const Payload = styled.pre`
 `;
 
 const Signature = styled.textarea`
-  font-family: monospace;
+  font: var(--font-mono);
   padding: 1rem;
   border: 1px solid rgba(34, 36, 38, 0.15);
   border-radius: 0.25rem;
@@ -187,18 +187,16 @@ function ClaimsApp ({ basePath }: Props): React.ReactElement<Props> {
 
   return (
     <main>
-      <header>
-        <Tabs
-          basePath={basePath}
-          items={itemsRef.current}
-        />
-      </header>
+      <Tabs
+        basePath={basePath}
+        items={itemsRef.current}
+      />
       {!isOldClaimProcess && <Warning />}
       <h1>
         <Trans>Claim your <em>{TokenUnit.abbr}</em> tokens</Trans>
       </h1>
       <Columar>
-        <Column>
+        <Columar.Column>
           <Card withBottomMargin>
             <h3>{t<string>('1. Select your {{chain}} account', {
               replace: {
@@ -235,7 +233,7 @@ function ClaimsApp ({ basePath }: Props): React.ReactElement<Props> {
                 <Input
                   autoFocus
                   className='full'
-                  help={t<string>('The the Ethereum address you used during the pre-sale (starting by "0x")')}
+                  help={t<string>('The Ethereum address you used during the pre-sale (starting by "0x")')}
                   label={t<string>('Pre-sale ethereum address')}
                   onChange={onChangeEthereumAddress}
                   value={ethereumAddress || ''}
@@ -296,8 +294,8 @@ function ClaimsApp ({ basePath }: Props): React.ReactElement<Props> {
               )}
             </Card>
           )}
-        </Column>
-        <Column showEmptyText={false}>
+        </Columar.Column>
+        <Columar.Column>
           {(step >= Step.Claim) && (
             isPreclaimed
               ? <AttestDisplay
@@ -314,10 +312,9 @@ function ClaimsApp ({ basePath }: Props): React.ReactElement<Props> {
                 isOldClaimProcess={isOldClaimProcess}
                 onSuccess={goToStepAccount}
                 statementKind={statementKind}
-                systemChain={systemChain}
               />
           )}
-        </Column>
+        </Columar.Column>
       </Columar>
     </main>
   );

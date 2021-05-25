@@ -1,22 +1,22 @@
-// Copyright 2017-2020 @polkadot/app-democracy authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-democracy authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { Option } from '@polkadot/types';
-import { AccountId } from '@polkadot/types/interfaces';
-import { DeriveCollectiveProposals } from '@polkadot/api-derive/types';
+import type { DeriveCollectiveProposal } from '@polkadot/api-derive/types';
+import type { Option } from '@polkadot/types';
+import type { AccountId } from '@polkadot/types/interfaces';
 
 import React, { useMemo } from 'react';
 import { Route, Switch } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+
 import { Tabs } from '@polkadot/react-components';
 import { useApi, useCall } from '@polkadot/react-hooks';
 
-import useCounter from './useCounter';
-import Overview from './Overview';
 import Motions from './Motions';
+import Overview from './Overview';
 import { useTranslation } from './translate';
+import useCounter from './useCounter';
 
 export { useCounter };
 
@@ -35,13 +35,13 @@ function CouncilApp ({ basePath, className }: Props): React.ReactElement<Props> 
   const { pathname } = useLocation();
   const numMotions = useCounter();
   const prime = useCall<AccountId | null>(api.query.council.prime, undefined, transformPrime) || null;
-  const motions = useCall<DeriveCollectiveProposals>(api.derive.council.proposals);
+  const motions = useCall<DeriveCollectiveProposal[]>(api.derive.council.proposals);
 
   const items = useMemo(() => [
     {
       isRoot: true,
       name: 'overview',
-      text: t<string>('Council overview')
+      text: t<string>('Overview')
     },
     {
       count: numMotions,
@@ -52,12 +52,10 @@ function CouncilApp ({ basePath, className }: Props): React.ReactElement<Props> 
 
   return (
     <main className={className}>
-      <header>
-        <Tabs
-          basePath={basePath}
-          items={items}
-        />
-      </header>
+      <Tabs
+        basePath={basePath}
+        items={items}
+      />
       <Switch>
         <Route path={`${basePath}/motions`}>
           <Motions

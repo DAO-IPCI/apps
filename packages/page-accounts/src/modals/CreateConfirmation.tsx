@@ -1,20 +1,20 @@
-// Copyright 2017-2020 @polkadot/app-accounts authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-accounts authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { KeypairType } from '@polkadot/util-crypto/types';
+import type { KeypairType } from '@polkadot/util-crypto/types';
 
 import React from 'react';
+
 import { AddressRow, Modal, Static } from '@polkadot/react-components';
 import { isHex } from '@polkadot/util';
 
 import { useTranslation } from '../translate';
 
 interface Props {
-  address: string;
+  address?: string;
   derivePath: string;
   isBusy: boolean;
-  name: string;
+  name?: string;
   pairType: KeypairType;
   seed?: string;
 }
@@ -29,33 +29,32 @@ function CreateConfirmation ({ address, derivePath, name, pairType, seed }: Prop
 
   return (
     <Modal.Content>
-      <Modal.Columns>
-        <Modal.Column>
-          <AddressRow
-            defaultName={name}
-            isInline
-            noDefaultNameOpacity
-            value={address}
-          />
-          {shortSeed && (
-            <Static
-              label={t<string>('partial seed')}
-              value={shortSeed}
-            />
-          )}
-          <Static
-            label={t<string>('keypair type')}
-            value={pairType}
-          />
-          <Static
-            label={t<string>('derivation path')}
-            value={derivePath || t<string>('<none provided>')}
-          />
-        </Modal.Column>
-        <Modal.Column>
+      <Modal.Columns hint={
+        <>
           <p>{t<string>('We will provide you with a generated backup file after your account is created. As long as you have access to your account you can always download this file later by clicking on "Backup" button from the Accounts section.')}</p>
           <p>{t<string>('Please make sure to save this file in a secure location as it is required, together with your password, to restore your account.')}</p>
-        </Modal.Column>
+        </>
+      }>
+        {address && name && <AddressRow
+          defaultName={name}
+          isInline
+          noDefaultNameOpacity
+          value={address}
+        />}
+        {shortSeed && (
+          <Static
+            label={t<string>('partial seed')}
+            value={shortSeed}
+          />
+        )}
+        <Static
+          label={t<string>('keypair type')}
+          value={pairType}
+        />
+        <Static
+          label={t<string>('derivation path')}
+          value={derivePath || t<string>('<none provided>')}
+        />
       </Modal.Columns>
     </Modal.Content>
   );

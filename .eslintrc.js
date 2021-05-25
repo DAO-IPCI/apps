@@ -1,8 +1,21 @@
-const base = require('@polkadot/dev/config/eslint');
+// Copyright 2017-2021 @polkadot/apps authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+const base = require('@polkadot/dev/config/eslint.cjs');
 
 // add override for any (a metric ton of them, initial conversion)
 module.exports = {
   ...base,
+  plugins: [...base.plugins, 'simple-import-sort'],
+  ignorePatterns: [
+    '.eslintrc.js',
+    '.github/**',
+    '.vscode/**',
+    '.yarn/**',
+    '**/build/*',
+    '**/coverage/*',
+    '**/node_modules/*'
+  ],
   parserOptions: {
     ...base.parserOptions,
     project: [

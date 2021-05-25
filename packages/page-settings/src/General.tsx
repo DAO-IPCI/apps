@@ -1,14 +1,17 @@
-// Copyright 2017-2020 @polkadot/app-settings authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-settings authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { Option } from '@polkadot/apps-config/settings/types';
+import type { Option } from '@polkadot/apps-config/settings/types';
+import type { SettingsStruct } from '@polkadot/ui-settings/types';
 
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import { createLanguages, createSs58 } from '@polkadot/apps-config/settings';
-import { isLedgerCapable } from '@polkadot/react-api';
-import { Button, Dropdown } from '@polkadot/react-components';
-import uiSettings, { SettingsStruct } from '@polkadot/ui-settings';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { createLanguages, createSs58 } from '@polkadot/apps-config';
+import { all as allNetworks } from '@polkadot/networks';
+import { Button, Dropdown, MarkWarning } from '@polkadot/react-components';
+import { useApi, useLedger } from '@polkadot/react-hooks';
+import { settings } from '@polkadot/ui-settings';
+import { isUndefined } from '@polkadot/util';
 
 import { useTranslation } from './translate';
 import { createIdenticon, createOption, save, saveAndReload } from './util';
@@ -17,21 +20,57 @@ interface Props {
   className?: string;
 }
 
-const ledgerConnOptions = uiSettings.availableLedgerConn;
+const ledgerConnOptions = settings.availableLedgerConn;
 
 function General ({ className = '' }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
+  const { api, isApiReady } = useApi();
+  const { isLedgerCapable } = useLedger();
   // tri-state: null = nothing changed, false = no reload, true = reload required
   const [changed, setChanged] = useState<boolean | null>(null);
-  const [settings, setSettings] = useState(uiSettings.get());
+  const [state, setSettings] = useState((): SettingsStruct => {
+    const values = settings.get();
+
+    return { ...values, uiTheme: values.uiTheme === 'dark' ? 'dark' : 'light' };
+  });
 
   const iconOptions = useMemo(
-    () => uiSettings.availableIcons.map((o): Option => createIdenticon(o, ['default'])),
+    () => settings.availableIcons
+      .map((o): Option => createIdenticon(o, ['default']))
+      .concat(createIdenticon({ info: 'robohash', text: 'RoboHash', value: 'robohash' })),
     []
   );
 
   const prefixOptions = useMemo(
-    () => createSs58(t).map((o): Option | React.ReactNode => createOption(o, ['default'])),
+    (): (Option | React.ReactNode)[] => {
+      let ss58Format = api.registry.chainSS58;
+
+      if (isUndefined(ss58Format)) {
+        ss58Format = 42;
+      }
+
+      const network = allNetworks.find(({ prefix }) => prefix === ss58Format);
+
+      return createSs58(t).map((o) =>
+        createOption(o, ['default'], 'empty', (
+          o.value === -1
+            ? isApiReady
+              ? network
+                ? ` (${network.displayName}, ${ss58Format || 0})`
+                : ` (${ss58Format || 0})`
+              : undefined
+            : ` (${o.value})`
+        ))
+      );
+    },
+    [api, isApiReady, t]
+  );
+
+  const themeOptions = useMemo(
+    () => [
+      { text: t('Light theme (default)'), value: 'light' },
+      { text: t('Dark theme (experimental, work-in-progress)'), value: 'dark' }
+    ],
     [t]
   );
 
@@ -41,37 +80,37 @@ function General ({ className = '' }: Props): React.ReactElement<Props> {
   );
 
   useEffect((): void => {
-    const prev = uiSettings.get() as unknown as Record<string, unknown>;
-    const hasChanges = Object.entries(settings).some(([key, value]) => prev[key] !== value);
-    const needsReload = prev.apiUrl !== settings.apiUrl || prev.prefix !== settings.prefix;
+    const prev = settings.get() as unknown as Record<string, unknown>;
+    const hasChanges = Object.entries(state).some(([key, value]) => prev[key] !== value);
+    const needsReload = prev.apiUrl !== state.apiUrl || prev.prefix !== state.prefix;
 
     setChanged(
       hasChanges
         ? needsReload
         : null
     );
-  }, [settings]);
+  }, [state]);
 
   const _handleChange = useCallback(
-    (key: keyof SettingsStruct) => <T extends string | number>(value: T): void =>
-      setSettings((settings) => ({ ...settings, [key]: value })),
+    (key: keyof SettingsStruct) => <T extends string | number>(value: T) =>
+      setSettings((state) => ({ ...state, [key]: value })),
     []
   );
 
   const _saveAndReload = useCallback(
-    () => saveAndReload(settings),
-    [settings]
+    () => saveAndReload(state),
+    [state]
   );
 
   const _save = useCallback(
     (): void => {
-      save(settings);
+      save(state);
       setChanged(null);
     },
-    [settings]
+    [state]
   );
 
-  const { i18nLang, icon, ledgerConn, prefix } = settings;
+  const { i18nLang, icon, ledgerConn, prefix, uiTheme } = state;
 
   return (
     <div className={className}>
@@ -93,17 +132,14 @@ function General ({ className = '' }: Props): React.ReactElement<Props> {
           options={iconOptions}
         />
       </div>
-      {isLedgerCapable() && (
-        <div className='ui--row'>
-          <Dropdown
-            defaultValue={ledgerConn}
-            help={t<string>('Manage your connection to Ledger S')}
-            label={t<string>('manage hardware connections')}
-            onChange={_handleChange('ledgerConn')}
-            options={ledgerConnOptions}
-          />
-        </div>
-      )}
+      <div className='ui--row'>
+        <Dropdown
+          defaultValue={uiTheme}
+          label={t<string>('default interface theme')}
+          onChange={_handleChange('uiTheme')}
+          options={themeOptions}
+        />
+      </div>
       <div className='ui--row'>
         <Dropdown
           defaultValue={i18nLang}
@@ -112,6 +148,24 @@ function General ({ className = '' }: Props): React.ReactElement<Props> {
           options={translateLanguages}
         />
       </div>
+      {isLedgerCapable && (
+        <>
+          <div className='ui--row'>
+            <Dropdown
+              defaultValue={ledgerConn}
+              help={t<string>('Manage your connection to Ledger S')}
+              label={t<string>('manage hardware connections')}
+              onChange={_handleChange('ledgerConn')}
+              options={ledgerConnOptions}
+            />
+          </div>
+          {state.ledgerConn !== 'none' && (
+            <div className='ui--row'>
+              <MarkWarning content={t<string>('Ledger support is still experimental and some issues may remain. Trust, but verify the addresses on your devices before transferring large amounts. There are some features that will not work, including batch calls (used extensively in staking and democracy) as well as any identity operations.')} />
+            </div>
+          )}
+        </>
+      )}
       <Button.Group>
         <Button
           icon='save'

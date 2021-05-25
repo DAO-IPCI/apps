@@ -1,12 +1,11 @@
-// Copyright 2017-2020 @polkadot/apps-config authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps-config authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import Beresheet from './beresheet';
-import Phala from './phala';
+import PhalaPoc3 from '@phala/typedefs/dist/phala-poc3';
+import PhalaPoc4 from '@phala/typedefs/dist/phala-poc4';
 
-// alphabetical
+// alphabetical, based on the actual displayed name
 export default {
-  Beresheet,
-  'Phala PoC-2': Phala
+  'Phala PoC-3': PhalaPoc3,
+  'Phala PoC-4': PhalaPoc4
 };

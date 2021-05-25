@@ -1,13 +1,12 @@
-// Copyright 2017-2020 @polkadot/app-settings authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-settings authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { InjectedExtension, InjectedMetadataKnown, MetadataDef } from '@polkadot/extension-inject/types';
+import type { ApiPromise } from '@polkadot/api';
+import type { InjectedExtension, InjectedMetadataKnown, MetadataDef } from '@polkadot/extension-inject/types';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import store from 'store';
-import { ApiPromise } from '@polkadot/api';
-import { registry } from '@polkadot/react-api';
+
 import { useApi } from '@polkadot/react-hooks';
 
 interface ExtensionKnown {
@@ -22,7 +21,7 @@ interface ExtensionInfo extends ExtensionKnown {
 
 interface Extensions {
   count: number;
-  extensions?: ExtensionInfo[];
+  extensions: ExtensionInfo[];
 }
 
 interface ExtensionProperties {
@@ -52,9 +51,9 @@ function saveProperties (api: ApiPromise, { name, version }: InjectedExtension):
 
   allProperties[name] = {
     extensionVersion: version,
-    ss58Format: registry.chainSS58,
-    tokenDecimals: registry.chainDecimals,
-    tokenSymbol: registry.chainToken
+    ss58Format: api.registry.chainSS58,
+    tokenDecimals: api.registry.chainDecimals[0],
+    tokenSymbol: api.registry.chainTokens[0]
   };
 
   store.set(storeKey, allProperties);
@@ -73,9 +72,9 @@ function hasCurrentProperties (api: ApiPromise, { extension }: ExtensionKnown): 
 
   const { ss58Format, tokenDecimals, tokenSymbol } = allProperties[extension.name];
 
-  return ss58Format === registry.chainSS58 &&
-    tokenDecimals === registry.chainDecimals &&
-    tokenSymbol === registry.chainToken;
+  return ss58Format === api.registry.chainSS58 &&
+    tokenDecimals === api.registry.chainDecimals[0] &&
+    tokenSymbol === api.registry.chainTokens[0];
 }
 
 // filter extensions based on the properties we have available
@@ -131,7 +130,8 @@ async function getExtensionInfo (api: ApiPromise, extension: InjectedExtension):
   }
 }
 
-async function getKnown (api: ApiPromise, extensions: InjectedExtension[]): Promise<ExtensionKnown[]> {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function getKnown (api: ApiPromise, extensions: InjectedExtension[], _: number): Promise<ExtensionKnown[]> {
   const all = await Promise.all(
     extensions.map((extension) => getExtensionInfo(api, extension))
   );
@@ -139,10 +139,11 @@ async function getKnown (api: ApiPromise, extensions: InjectedExtension[]): Prom
   return all.filter((info): info is ExtensionKnown => !!info);
 }
 
+const EMPTY_STATE = { count: 0, extensions: [] };
+
 export default function useExtensions (): Extensions {
   const { api, extensions, isApiReady, isDevelopment } = useApi();
   const [all, setAll] = useState<ExtensionKnown[] | undefined>();
-  const [state, setState] = useState<Extensions>({ count: 0 });
   const [trigger, setTrigger] = useState(0);
 
   useEffect((): () => void => {
@@ -156,14 +157,13 @@ export default function useExtensions (): Extensions {
   }, []);
 
   useEffect((): void => {
-    extensions && getKnown(api, extensions).then(setAll);
+    extensions && getKnown(api, extensions, trigger).then(setAll);
   }, [api, extensions, trigger]);
 
-  useEffect((): void => {
-    isDevelopment
-      ? setState({ count: 0, extensions: [] })
-      : isApiReady && all && setState(filterAll(api, all));
-  }, [all, api, isApiReady, isDevelopment]);
-
-  return state;
+  return useMemo(
+    () => isDevelopment || !isApiReady || !all
+      ? EMPTY_STATE
+      : filterAll(api, all),
+    [all, api, isApiReady, isDevelopment]
+  );
 }

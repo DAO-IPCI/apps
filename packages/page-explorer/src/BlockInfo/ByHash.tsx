@@ -1,43 +1,79 @@
-// Copyright 2017-2020 @polkadot/app-explorer authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-explorer authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { EventRecord, SignedBlock } from '@polkadot/types/interfaces';
-import { KeyedEvent } from '@polkadot/react-query/types';
+import type { HeaderExtended } from '@polkadot/api-derive/types';
+import type { KeyedEvent } from '@polkadot/react-query/types';
+import type { EventRecord, SignedBlock } from '@polkadot/types/interfaces';
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { HeaderExtended } from '@polkadot/api-derive';
-import { AddressSmall, Columar, Column, LinkExternal, Table } from '@polkadot/react-components';
-import { useApi, useCall } from '@polkadot/react-hooks';
+
+import { AddressSmall, Columar, LinkExternal, Table } from '@polkadot/react-components';
+import { useApi, useIsMountedRef } from '@polkadot/react-hooks';
 import { formatNumber } from '@polkadot/util';
 
-import { useTranslation } from '../translate';
 import Events from '../Events';
+import { useTranslation } from '../translate';
 import Extrinsics from './Extrinsics';
+import Justifications from './Justifications';
 import Logs from './Logs';
+import Summary from './Summary';
 
 interface Props {
   className?: string;
-  value: string;
+  error?: Error | null;
+  value?: string | null;
 }
 
-const transformEvents = {
-  isSingle: true,
-  transform: (events: EventRecord[]): KeyedEvent[] =>
+const EMPTY_HEADER = [['...', 'start', 6]];
+
+function transformResult ([events, getBlock, getHeader]: [EventRecord[], SignedBlock, HeaderExtended?]): [KeyedEvent[], SignedBlock, HeaderExtended?] {
+  return [
     events.map((record, index) => ({
       indexes: [index],
       key: `${Date.now()}-${index}-${record.hash.toHex()}`,
       record
-    }))
-};
+    })),
+    getBlock,
+    getHeader
+  ];
+}
 
-function BlockByHash ({ className = '', value }: Props): React.ReactElement<Props> {
+function BlockByHash ({ className = '', error, value }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
   const { api } = useApi();
-  const events = useCall<KeyedEvent[]>(api.query.system.events.at, [value], transformEvents);
-  const getBlock = useCall<SignedBlock>(api.rpc.chain.getBlock, [value], { isSingle: true });
-  const getHeader = useCall<HeaderExtended>(api.derive.chain.getHeader, [value]);
+  const mountedRef = useIsMountedRef();
+  const [[events, getBlock, getHeader], setState] = useState<[KeyedEvent[]?, SignedBlock?, HeaderExtended?]>([]);
+  const [myError, setError] = useState<Error | null | undefined>(error);
+
+  useEffect((): void => {
+    value && Promise
+      .all([
+        api.query.system.events.at(value),
+        api.rpc.chain.getBlock(value),
+        api.derive.chain.getHeader(value)
+      ])
+      .then((result): void => {
+        mountedRef.current && setState(transformResult(result));
+      })
+      .catch((error: Error): void => {
+        mountedRef.current && setError(error);
+      });
+  }, [api, mountedRef, value]);
+
+  const header = useMemo(
+    () => getHeader
+      ? [
+        [formatNumber(getHeader.number.unwrap()), 'start', 1],
+        [t('hash'), 'start'],
+        [t('parent'), 'start'],
+        [t('extrinsics'), 'start'],
+        [t('state'), 'start'],
+        [undefined, 'media--1200']
+      ]
+      : EMPTY_HEADER,
+    [getHeader, t]
+  );
 
   const blockNumber = getHeader?.number.unwrap();
   const parentHash = getHeader?.parentHash.toHex();
@@ -45,44 +81,41 @@ function BlockByHash ({ className = '', value }: Props): React.ReactElement<Prop
 
   return (
     <div className={className}>
+      <Summary
+        events={events}
+        maxBlockWeight={api.consts.system.blockWeights?.maxBlock}
+        signedBlock={getBlock}
+      />
       <Table
-        header={
-          getHeader
-            ? [
-              [formatNumber(blockNumber), 'start', 1],
-              [t('hash'), 'start'],
-              [t('parent'), 'start'],
-              [t('extrinsics'), 'start'],
-              [t('state'), 'start'],
-              []
-            ]
-            : [['...', 'start', 6]]
-        }
+        header={header}
         isFixed
       >
-        {getBlock && !getBlock.isEmpty && getHeader && !getHeader.isEmpty && (
-          <tr>
-            <td className='address'>
-              {getHeader.author && (
-                <AddressSmall value={getHeader.author} />
-              )}
-            </td>
-            <td className='hash overflow'>{getHeader.hash.toHex()}</td>
-            <td className='hash overflow'>{
-              hasParent
-                ? <Link to={`/explorer/query/${parentHash || ''}`}>{parentHash}</Link>
-                : parentHash
-            }</td>
-            <td className='hash overflow'>{getHeader.extrinsicsRoot.toHex()}</td>
-            <td className='hash overflow'>{getHeader.stateRoot.toHex()}</td>
-            <td>
-              <LinkExternal
-                data={value}
-                type='block'
-              />
-            </td>
-          </tr>
-        )}
+        {myError
+          ? <tr><td colSpan={6}>{t('Unable to retrieve the specified block details. {{error}}', { replace: { error: myError.message } })}</td></tr>
+          : getBlock && getHeader && !getBlock.isEmpty && !getHeader.isEmpty && (
+            <tr>
+              <td className='address'>
+                {getHeader.author && (
+                  <AddressSmall value={getHeader.author} />
+                )}
+              </td>
+              <td className='hash overflow'>{getHeader.hash.toHex()}</td>
+              <td className='hash overflow'>{
+                hasParent
+                  ? <Link to={`/explorer/query/${parentHash || ''}`}>{parentHash}</Link>
+                  : parentHash
+              }</td>
+              <td className='hash overflow'>{getHeader.extrinsicsRoot.toHex()}</td>
+              <td className='hash overflow'>{getHeader.stateRoot.toHex()}</td>
+              <td className='media--1200'>
+                <LinkExternal
+                  data={value}
+                  type='block'
+                />
+              </td>
+            </tr>
+          )
+        }
       </Table>
       {getBlock && getHeader && (
         <>
@@ -92,16 +125,17 @@ function BlockByHash ({ className = '', value }: Props): React.ReactElement<Prop
             value={getBlock.block.extrinsics}
           />
           <Columar>
-            <Column>
+            <Columar.Column>
               <Events
                 eventClassName='explorer--BlockByHash-block'
                 events={events?.filter(({ record: { phase } }) => !phase.isApplyExtrinsic)}
                 label={t<string>('system events')}
               />
-            </Column>
-            <Column>
+            </Columar.Column>
+            <Columar.Column>
               <Logs value={getHeader.digest.logs} />
-            </Column>
+              <Justifications value={getBlock.justifications} />
+            </Columar.Column>
           </Columar>
         </>
       )}

@@ -1,10 +1,11 @@
-// Copyright 2017-2020 @polkadot/apps authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import type { IconName } from '@fortawesome/fontawesome-svg-core';
 
 import React from 'react';
 import styled from 'styled-components';
-import { IconName } from '@fortawesome/fontawesome-svg-core';
+
 import { Button, Icon } from '@polkadot/react-components';
 import { useToggle } from '@polkadot/react-hooks';
 
@@ -46,16 +47,15 @@ function BaseOverlay ({ children, className = '', icon, type }: Props): React.Re
 }
 
 export default React.memo(styled(BaseOverlay)`
-  background: white;
-  border: 0 solid transparent;
-  border-bottom-left-radius: 0.25rem;
-  border-bottom-width: 1px;
+  background: var(--bg-menu);
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
   border-left-width: 0.25rem;
   line-height: 1.5em;
   padding: 0 1rem;
   position: fixed;
-  right: 0;
-  top: 0;
+  right: 0.75rem;
+  top: 0.75rem;
   max-width: 55rem;
   z-index: 500;
 
@@ -90,7 +90,7 @@ export default React.memo(styled(BaseOverlay)`
     display: flex;
     margin: 0 auto;
     max-width: 50rem;
-    padding: 1em;
+    padding: 1em 3rem 1rem 0.5rem;
     position: relative;
 
     .contentIcon {

@@ -1,6 +1,5 @@
-// Copyright 2017-2020 @polkadot/apps authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
 
@@ -17,5 +16,6 @@ export interface Network {
 export interface Group {
   header: React.ReactNode;
   isDevelopment?: boolean;
+  isSpaced?: boolean;
   networks: Network[];
 }

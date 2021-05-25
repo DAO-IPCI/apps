@@ -1,9 +1,11 @@
-// Copyright 2017-2020 @polkadot/app-staking authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-staking authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import BN from 'bn.js';
 import React, { useEffect, useState } from 'react';
+
+import { MarkWarning } from '@polkadot/react-components';
+import { BN_TEN } from '@polkadot/util';
 
 import { useTranslation } from '../../translate';
 
@@ -22,7 +24,7 @@ function InputValidationUnstakeThreshold ({ onError, unstakeThreshold }: Props):
 
       if (unstakeThreshold.ltn(0)) {
         newError = t<string>('The Threshold must be a positive number');
-      } else if (unstakeThreshold.gtn(10)) {
+      } else if (unstakeThreshold.gt(BN_TEN)) {
         newError = t<string>('The Threshold must lower than 11');
       }
 
@@ -36,9 +38,7 @@ function InputValidationUnstakeThreshold ({ onError, unstakeThreshold }: Props):
   }
 
   return (
-    <article className='warning'>
-      <div>{error}</div>
-    </article>
+    <MarkWarning content={error} />
   );
 }
 

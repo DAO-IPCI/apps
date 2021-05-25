@@ -1,6 +1,5 @@
-// Copyright 2017-2020 @polkadot/react-components authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-components authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 // Something is seriously going wrong here...
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
@@ -11,7 +10,6 @@
 import CodeFlask from 'codeflask';
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { classes } from '@polkadot/react-components/util';
 
 interface Props {
   className?: string;
@@ -40,7 +38,7 @@ interface Props {
  * ```
  */
 function Editor ({ className = '', code, isValid, onEdit }: Props): React.ReactElement<Props> {
-  const [editorId] = useState(`flask-${Date.now()}`);
+  const [editorId] = useState(() => `flask-${Date.now()}`);
   const editorRef = useRef<CodeFlask | null>(null);
 
   useEffect((): void => {
@@ -64,7 +62,7 @@ function Editor ({ className = '', code, isValid, onEdit }: Props): React.ReactE
 
   return (
     <div
-      className={classes('ui-Editor', className, isValid === false ? 'invalid' : '')}
+      className={`ui-Editor ${className}${isValid === false ? ' invalid' : ''}`}
       id={editorId}
     />
   );

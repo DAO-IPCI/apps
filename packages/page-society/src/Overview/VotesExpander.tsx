@@ -1,10 +1,10 @@
-// Copyright 2017-2020 @polkadot/app-society authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-society authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { VoteType } from '../types';
+import type { VoteType } from '../types';
 
 import React from 'react';
+
 import { AddressMini, Expander } from '@polkadot/react-components';
 
 interface Props {
@@ -19,12 +19,12 @@ function VotesExpander ({ label, votes }: Props): React.ReactElement<Props> | nu
 
   return (
     <Expander summary={`${label} (${votes.length})`}>
-      {votes.map(([who]): React.ReactNode =>
+      {votes.map(([who]): React.ReactNode => (
         <AddressMini
           key={who.toString()}
           value={who}
         />
-      )}
+      ))}
     </Expander>
   );
 }

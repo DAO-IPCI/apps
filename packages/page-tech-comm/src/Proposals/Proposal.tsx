@@ -1,17 +1,18 @@
-// Copyright 2017-2020 @polkadot/app-tech-comm authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-tech-comm authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { AccountId, Hash, Proposal as ProposalType, Votes } from '@polkadot/types/interfaces';
+import type { Option } from '@polkadot/types';
+import type { AccountId, Hash, Proposal as ProposalType, Votes } from '@polkadot/types/interfaces';
 
-import React from 'react';
-import { AddressMini } from '@polkadot/react-components';
-import { useApi, useCall, useVotingStatus } from '@polkadot/react-hooks';
-import { BlockToTime } from '@polkadot/react-query';
+import React, { useMemo } from 'react';
+
 import ProposalCell from '@polkadot/app-democracy/Overview/ProposalCell';
-import { Option } from '@polkadot/types';
+import { AddressMini, TxButton } from '@polkadot/react-components';
+import { useAccounts, useApi, useCall, useVotingStatus, useWeight } from '@polkadot/react-hooks';
+import { BlockToTime } from '@polkadot/react-query';
 import { formatNumber } from '@polkadot/util';
 
+import { useTranslation } from '../translate';
 import Close from './Close';
 import Voting from './Voting';
 
@@ -21,6 +22,7 @@ interface Props {
   isMember: boolean;
   members: string[];
   prime?: AccountId | null;
+  type: 'membership' | 'technicalCommittee';
 }
 
 const transformProposal = {
@@ -31,11 +33,23 @@ const transformVotes = {
   transform: (optVotes: Option<Votes>) => optVotes.unwrapOr(null)
 };
 
-function Proposal ({ className = '', imageHash, isMember, members, prime }: Props): React.ReactElement<Props> | null {
+function Proposal ({ className = '', imageHash, members, prime, type }: Props): React.ReactElement<Props> | null {
+  const { t } = useTranslation();
   const { api } = useApi();
-  const proposal = useCall<ProposalType | null>(api.query.technicalCommittee.proposalOf, [imageHash], transformProposal);
-  const votes = useCall<Votes | null>(api.query.technicalCommittee.voting, [imageHash], transformVotes);
-  const { hasFailed, isCloseable, isVoteable, remainingBlocks } = useVotingStatus(votes, members.length, 'technicalCommittee');
+  const { allAccounts } = useAccounts();
+  const proposal = useCall<ProposalType | null>(api.query[type].proposalOf, [imageHash], transformProposal);
+  const votes = useCall<Votes | null>(api.query[type].voting, [imageHash], transformVotes);
+  const { hasFailed, isCloseable, isVoteable, remainingBlocks } = useVotingStatus(votes, members.length, type);
+  const [proposalWeight, proposalLength] = useWeight(proposal);
+
+  const [councilId, isMultiMembers] = useMemo(
+    (): [string | null, boolean] => {
+      const councilIds = allAccounts.filter((accountId) => members.includes(accountId));
+
+      return [councilIds[0] || null, councilIds.length > 1];
+    },
+    [allAccounts, members]
+  );
 
   if (!proposal || !votes) {
     return null;
@@ -56,7 +70,7 @@ function Proposal ({ className = '', imageHash, isMember, members, prime }: Prop
       <td className='number together'>
         {remainingBlocks && end && (
           <>
-            <BlockToTime blocks={remainingBlocks} />
+            <BlockToTime value={remainingBlocks} />
             #{formatNumber(end)}
           </>
         )}
@@ -83,19 +97,39 @@ function Proposal ({ className = '', imageHash, isMember, members, prime }: Prop
         {isVoteable && !isCloseable && (
           <Voting
             hash={imageHash}
+            members={members}
             prime={prime}
             proposalId={index}
+            type={type}
           />
         )}
         {isCloseable && (
-          <Close
-            hasFailed={hasFailed}
-            hash={imageHash}
-            idNumber={index}
-            isDisabled={!isMember}
-            members={members}
-            proposal={proposal}
-          />
+          isMultiMembers
+            ? (
+              <Close
+                hasFailed={hasFailed}
+                hash={imageHash}
+                idNumber={index}
+                members={members}
+                proposal={proposal}
+                type={type}
+              />
+            )
+            : (
+              <TxButton
+                accountId={councilId}
+                icon='times'
+                label={t<string>('Close')}
+                params={
+                  api.tx[type].close?.meta.args.length === 4
+                    ? hasFailed
+                      ? [imageHash, index, 0, 0]
+                      : [imageHash, index, proposalWeight, proposalLength]
+                    : [imageHash, index]
+                }
+                tx={api.tx[type].closeOperational || api.tx[type].close}
+              />
+            )
         )}
       </td>
     </tr>

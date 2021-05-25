@@ -1,8 +1,8 @@
-// Copyright 2017-2020 @polkadot/app-staking authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-staking authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
+
 import { Badge } from '@polkadot/react-components';
 import { useApi } from '@polkadot/react-hooks';
 
@@ -22,7 +22,7 @@ function MaxBadge ({ numNominators }: Props): React.ReactElement<Props> | null {
   return (
     <Badge
       color='red'
-      info={max.toString()}
+      icon='balance-scale-right'
     />
   );
 }

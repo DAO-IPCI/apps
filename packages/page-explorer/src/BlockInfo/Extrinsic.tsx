@@ -1,26 +1,29 @@
-// Copyright 2017-2020 @polkadot/app-explorer authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-explorer authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { BlockNumber, Extrinsic } from '@polkadot/types/interfaces';
-import { KeyedEvent } from '@polkadot/react-query/types';
+import type { KeyedEvent } from '@polkadot/react-query/types';
+import type { BlockNumber, DispatchInfo, Extrinsic, Weight } from '@polkadot/types/interfaces';
 
-import React from 'react';
+import BN from 'bn.js';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { registry } from '@polkadot/react-api';
+
 import { AddressMini, Call, Expander, LinkExternal } from '@polkadot/react-components';
 import { formatNumber } from '@polkadot/util';
 
-import { useTranslation } from '../translate';
 import Event from '../Event';
+import { useTranslation } from '../translate';
 
 interface Props {
   blockNumber?: BlockNumber;
   className?: string;
   events?: KeyedEvent[];
   index: number;
+  maxBlockWeight?: Weight;
   value: Extrinsic;
 }
+
+const BN_TEN_THOUSAND = new BN(10_000);
 
 function getEra ({ era }: Extrinsic, blockNumber?: BlockNumber): [number, number] | null {
   if (blockNumber && era.isMortalEra) {
@@ -32,15 +35,62 @@ function getEra ({ era }: Extrinsic, blockNumber?: BlockNumber): [number, number
   return null;
 }
 
-function filterEvents (index: number, events: KeyedEvent[] = []): KeyedEvent[] {
-  return events.filter(({ record: { phase } }) => phase.isApplyExtrinsic && phase.asApplyExtrinsic.eq(index));
+function filterEvents (index: number, events: KeyedEvent[] = [], maxBlockWeight?: Weight): [DispatchInfo | undefined, number, KeyedEvent[]] {
+  const filtered = events.filter(({ record: { phase } }) =>
+    phase.isApplyExtrinsic &&
+    phase.asApplyExtrinsic.eq(index)
+  );
+  const infoRecord = filtered.find(({ record: { event: { method, section } } }) =>
+    section === 'system' &&
+    ['ExtrinsicFailed', 'ExtrinsicSuccess'].includes(method)
+  );
+  const dispatchInfo = infoRecord
+    ? infoRecord.record.event.method === 'ExtrinsicSuccess'
+      ? infoRecord.record.event.data[0] as DispatchInfo
+      : infoRecord.record.event.data[1] as DispatchInfo
+    : undefined;
+
+  return [
+    dispatchInfo,
+    dispatchInfo && maxBlockWeight
+      ? dispatchInfo.weight.mul(BN_TEN_THOUSAND).div(maxBlockWeight).toNumber() / 100
+      : 0,
+    filtered
+  ];
 }
 
-function ExtrinsicDisplay ({ blockNumber, className = '', events, index, value }: Props): React.ReactElement<Props> {
+function ExtrinsicDisplay ({ blockNumber, className = '', events, index, maxBlockWeight, value }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const { meta, method, section } = registry.findMetaCall(value.callIndex);
-  const era = getEra(value, blockNumber);
-  const thisEvents = filterEvents(index, events);
+
+  const { meta, method, section } = useMemo(
+    () => value.registry.findMetaCall(value.callIndex),
+    [value]
+  );
+
+  const mortality = useMemo(
+    (): string | undefined => {
+      if (value.isSigned) {
+        const era = getEra(value, blockNumber);
+
+        return era
+          ? t<string>('mortal, valid from #{{startAt}} to #{{endsAt}}', {
+            replace: {
+              endsAt: formatNumber(era[1]),
+              startAt: formatNumber(era[0])
+            }
+          })
+          : t<string>('immortal');
+      }
+
+      return undefined;
+    },
+    [blockNumber, t, value]
+  );
+
+  const [dispatchInfo, weightPercentage, thisEvents] = useMemo(
+    () => filterEvents(index, events, maxBlockWeight),
+    [index, events, maxBlockWeight]
+  );
 
   return (
     <tr
@@ -57,24 +107,16 @@ function ExtrinsicDisplay ({ blockNumber, className = '', events, index, value }
         >
           <Call
             className='details'
-            mortality={
-              era
-                ? t<string>('mortal, valid from #{{startAt}} to #{{endsAt}}', {
-                  replace: {
-                    endsAt: formatNumber(era[1]),
-                    startAt: formatNumber(era[0])
-                  }
-                })
-                : t<string>('immortal')
-            }
+            mortality={mortality}
             tip={value.tip?.toBn()}
             value={value}
             withHash
+            withSignature
           />
         </Expander>
       </td>
       <td
-        className='top'
+        className='top media--1000'
         colSpan={2}
       >
         {thisEvents.map(({ key, record }) =>
@@ -85,22 +127,27 @@ function ExtrinsicDisplay ({ blockNumber, className = '', events, index, value }
           />
         )}
       </td>
-      <td className='top'>
-        {value.isSigned
-          ? (
-            <>
-              <AddressMini value={value.signer} />
-              <div className='explorer--BlockByHash-nonce'>
-                {t<string>('index')} {formatNumber(value.nonce)}
-              </div>
-              <LinkExternal
-                data={value.hash.toHex()}
-                type='extrinsic'
-              />
-            </>
-          )
-          : <div className='explorer--BlockByHash-unsigned'>{t<string>('not signed')}</div>
-        }
+      <td className='top number media--1400'>
+        {dispatchInfo && (
+          <>
+            <>{formatNumber(dispatchInfo.weight)}</>
+            <div>{weightPercentage.toFixed(2)}%</div>
+          </>
+        )}
+      </td>
+      <td className='top media--1200'>
+        {value.isSigned && (
+          <>
+            <AddressMini value={value.signer} />
+            <div className='explorer--BlockByHash-nonce'>
+              {t<string>('index')} {formatNumber(value.nonce)}
+            </div>
+            <LinkExternal
+              data={value.hash.toHex()}
+              type='extrinsic'
+            />
+          </>
+        )}
       </td>
     </tr>
   );
@@ -121,6 +168,6 @@ export default React.memo(styled(ExtrinsicDisplay)`
 
   .explorer--BlockByHash-unsigned {
     opacity: 0.6;
-    font-weight: 100;
+    font-weight: var(--font-weight-normal);
   }
 `);

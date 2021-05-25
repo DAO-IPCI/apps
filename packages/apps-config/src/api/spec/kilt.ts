@@ -1,16 +1,8 @@
-// Copyright 2017-2020 @polkadot/apps-config authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps-config authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-export default {
-  Address: 'AccountId',
-  BlockNumber: 'u64',
-  DelegationNodeId: 'Hash',
-  ErrorCode: 'u16',
-  Index: 'u64',
-  LookupSource: 'AccountId',
-  Permissions: 'u32',
-  PublicBoxKey: 'Hash',
-  PublicSigningKey: 'Hash',
-  Signature: 'MultiSignature'
-};
+import type { OverrideBundleDefinition } from '@polkadot/types/types';
+
+import { typeBundleForPolkadot } from '@kiltprotocol/type-definitions';
+
+export default typeBundleForPolkadot as unknown as OverrideBundleDefinition;

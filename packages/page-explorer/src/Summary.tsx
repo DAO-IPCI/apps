@@ -1,32 +1,40 @@
-// Copyright 2017-2020 @polkadot/app-explorer authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-explorer authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
+
+import { CardSummary, SummaryBox } from '@polkadot/react-components';
 import { useApi } from '@polkadot/react-hooks';
-import { SummaryBox, CardSummary } from '@polkadot/react-components';
 import { BestFinalized, BestNumber, BlockToTime, TimeNow, TotalIssuance } from '@polkadot/react-query';
-import { BN_ONE } from '@polkadot/util';
+import { BN_ONE, formatNumber } from '@polkadot/util';
 
 import SummarySession from './SummarySession';
 import { useTranslation } from './translate';
 
-function Summary (): React.ReactElement {
+interface Props {
+  eventCount: number;
+}
+
+function Summary ({ eventCount }: Props): React.ReactElement {
   const { t } = useTranslation();
   const { api } = useApi();
 
   return (
     <SummaryBox>
       <section>
-        <CardSummary label={t<string>('last block')}>
-          <TimeNow />
-        </CardSummary>
-        <CardSummary
-          className='media--800'
-          label={t<string>('target')}
-        >
-          <BlockToTime blocks={BN_ONE} />
-        </CardSummary>
+        {api.query.timestamp && (
+          <>
+            <CardSummary label={t<string>('last block')}>
+              <TimeNow />
+            </CardSummary>
+            <CardSummary
+              className='media--800'
+              label={t<string>('target')}
+            >
+              <BlockToTime value={BN_ONE} />
+            </CardSummary>
+          </>
+        )}
         {api.query.balances && (
           <CardSummary
             className='media--800'
@@ -40,6 +48,12 @@ function Summary (): React.ReactElement {
         <SummarySession withEra={false} />
       </section>
       <section>
+        <CardSummary
+          className='media--1000'
+          label={t<string>('last events')}
+        >
+          {formatNumber(eventCount)}
+        </CardSummary>
         {api.query.grandpa && (
           <CardSummary label={t<string>('finalized')}>
             <BestFinalized />

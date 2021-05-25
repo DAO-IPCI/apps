@@ -1,15 +1,14 @@
-// Copyright 2017-2020 @polkadot/app-treasury authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-treasury authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { DeriveTreasuryProposal } from '@polkadot/api-derive/types';
+import type { DeriveTreasuryProposal } from '@polkadot/api-derive/types';
 
-import React, { useCallback, useMemo } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useMemo } from 'react';
+
 import { Table } from '@polkadot/react-components';
 
-import Proposal from './Proposal';
 import { useTranslation } from '../translate';
+import Proposal from './Proposal';
 
 interface Props {
   className?: string;
@@ -21,14 +20,6 @@ interface Props {
 
 function ProposalsBase ({ className = '', isApprovals, isMember, members, proposals }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const history = useHistory();
-
-  const _onRespond = useCallback(
-    (): void => {
-      history.push('/council/motions');
-    },
-    [history]
-  );
 
   const header = useMemo(() => [
     [isApprovals ? t<string>('Approved') : t<string>('Proposals'), 'start', 2],
@@ -50,7 +41,6 @@ function ProposalsBase ({ className = '', isApprovals, isMember, members, propos
           isMember={isMember}
           key={proposal.id.toString()}
           members={members}
-          onRespond={_onRespond}
           proposal={proposal}
           withSend={!isApprovals}
         />

@@ -1,6 +1,5 @@
-// Copyright 2017-2020 @polkadot/app-accounts authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-accounts authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import { useState } from 'react';
 
@@ -112,8 +111,8 @@ export function extractIpfsDetails (): State {
       : extractOther(url);
 }
 
-export default function useIpfs (): State {
-  const [state] = useState(extractIpfsDetails());
+export function useIpfs (): State {
+  const [state] = useState(() => extractIpfsDetails());
 
   return state;
 }

@@ -1,29 +1,28 @@
-// Copyright 2017-2020 @polkadot/react-params authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-params authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { DispatchError } from '@polkadot/types/interfaces';
-import { Props } from '../types';
+import type { DispatchError } from '@polkadot/types/interfaces';
+import type { Props as BaseProps } from '../types';
 
 import React, { useEffect, useState } from 'react';
-import { registry } from '@polkadot/react-api';
+
 import { Input } from '@polkadot/react-components';
 
 import { useTranslation } from '../translate';
 import Static from './Static';
 import Unknown from './Unknown';
 
-interface ModuleErrorDefault {
-  isModule?: boolean
-}
-
 interface Details {
   details?: string | null;
   type?: string;
 }
 
-function isModuleError (value?: ModuleErrorDefault): value is DispatchError {
-  return !!value?.isModule;
+interface Props extends BaseProps {
+  childrenPre?: React.ReactNode;
+}
+
+function isDispatchError (value?: unknown): value is DispatchError {
+  return !!(value && ((value as DispatchError).isModule || (value as DispatchError).isToken));
 }
 
 function ErrorDisplay (props: Props): React.ReactElement<Props> {
@@ -33,17 +32,25 @@ function ErrorDisplay (props: Props): React.ReactElement<Props> {
   useEffect((): void => {
     const { value } = props.defaultValue || {};
 
-    if (isModuleError(value as ModuleErrorDefault)) {
-      try {
-        const { documentation, name, section } = registry.findMetaError((value as DispatchError).asModule);
+    if (isDispatchError(value)) {
+      if (value.isModule) {
+        try {
+          const mod = value.asModule;
+          const { documentation, name, section } = mod.registry.findMetaError(mod);
 
+          return setDetails({
+            details: documentation.join(', '),
+            type: `${section}.${name}`
+          });
+        } catch (error) {
+          // Errors may not actually be exposed, in this case, just return the default representation
+          console.error(error);
+        }
+      } else if (value.isToken) {
         return setDetails({
-          details: documentation.join(', '),
-          type: `${section}.${name}`
+          details: value.asToken.type,
+          type: value.type
         });
-      } catch (error) {
-        // Errors may not actually be exposed, in this case, just return the default representation
-        console.error(error);
       }
     }
 

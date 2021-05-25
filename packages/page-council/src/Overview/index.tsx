@@ -1,13 +1,13 @@
-// Copyright 2017-2020 @polkadot/app-democracy authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-democracy authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { DeriveCouncilVotes, DeriveElectionsInfo } from '@polkadot/api-derive/types';
-import { AccountId, BlockNumber } from '@polkadot/types/interfaces';
+import type { DeriveCouncilVotes, DeriveElectionsInfo } from '@polkadot/api-derive/types';
+import type { AccountId } from '@polkadot/types/interfaces';
 
 import React from 'react';
+
 import { Button } from '@polkadot/react-components';
-import { useApi, useCall } from '@polkadot/react-hooks';
+import { useApi, useBestNumber, useCall } from '@polkadot/react-hooks';
 
 import Candidates from './Candidates';
 import Members from './Members';
@@ -40,7 +40,7 @@ const transformVotes = {
 
 function Overview ({ className = '', prime }: Props): React.ReactElement<Props> {
   const { api } = useApi();
-  const bestNumber = useCall<BlockNumber>(api.derive.chain.bestNumber);
+  const bestNumber = useBestNumber();
   const electionsInfo = useCall<DeriveElectionsInfo>(api.derive.elections.info);
   const allVotes = useCall<Record<string, AccountId[]>>(api.derive.council.votes, undefined, transformVotes);
 

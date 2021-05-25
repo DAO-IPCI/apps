@@ -1,24 +1,27 @@
-// Copyright 2017-2020 @polkadot/app-tech-comm authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-tech-comm authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { AccountId, Hash } from '@polkadot/types/interfaces';
+import type { AccountId, Hash } from '@polkadot/types/interfaces';
 
 import BN from 'bn.js';
 import React, { useState } from 'react';
-import { Button, Modal, TxButton, VoteAccount } from '@polkadot/react-components';
-import { useAccounts, useToggle } from '@polkadot/react-hooks';
+
+import { Button, MarkWarning, Modal, TxButton, VoteAccount } from '@polkadot/react-components';
+import { useAccounts, useApi, useToggle } from '@polkadot/react-hooks';
 
 import { useTranslation } from '../translate';
 
 interface Props {
   hash: Hash | string;
+  members: string[];
   prime?: AccountId | null;
   proposalId: BN | number;
+  type: 'membership' | 'technicalCommittee';
 }
 
-function Voting ({ hash, prime, proposalId }: Props): React.ReactElement<Props> | null {
+function Voting ({ hash, members, prime, proposalId, type }: Props): React.ReactElement<Props> | null {
   const { t } = useTranslation();
+  const { api } = useApi();
   const { hasAccounts } = useAccounts();
   const [accountId, setAccountId] = useState<string | null>(null);
   const [isVotingOpen, toggleVoting] = useToggle();
@@ -26,8 +29,6 @@ function Voting ({ hash, prime, proposalId }: Props): React.ReactElement<Props> 
   if (!hasAccounts) {
     return null;
   }
-
-  const isPrime = accountId === prime?.toString();
 
   return (
     <>
@@ -37,11 +38,12 @@ function Voting ({ hash, prime, proposalId }: Props): React.ReactElement<Props> 
           size='small'
         >
           <Modal.Content>
-            <VoteAccount onChange={setAccountId} />
-            {isPrime && (
-              <article className='warning'>
-                <div>{t<string>('You are voting with this collective\'s prime account. The vote will be the default outcome in case of any abstentions.')}</div>
-              </article>
+            <VoteAccount
+              filter={members}
+              onChange={setAccountId}
+            />
+            {(accountId === prime?.toString()) && (
+              <MarkWarning content={t<string>('You are voting with this collective\'s prime account. The vote will be the default outcome in case of any abstentions.')} />
             )}
           </Modal.Content>
           <Modal.Actions onCancel={toggleVoting}>
@@ -51,7 +53,7 @@ function Voting ({ hash, prime, proposalId }: Props): React.ReactElement<Props> 
               label={t<string>('Vote Nay')}
               onStart={toggleVoting}
               params={[hash, proposalId, false]}
-              tx='technicalCommittee.vote'
+              tx={api.tx[type].vote}
             />
             <TxButton
               accountId={accountId}
@@ -59,7 +61,7 @@ function Voting ({ hash, prime, proposalId }: Props): React.ReactElement<Props> 
               label={t<string>('Vote Aye')}
               onStart={toggleVoting}
               params={[hash, proposalId, true]}
-              tx='technicalCommittee.vote'
+              tx={api.tx[type].vote}
             />
           </Modal.Actions>
         </Modal>

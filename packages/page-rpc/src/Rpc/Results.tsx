@@ -1,11 +1,11 @@
-// Copyright 2017-2020 @polkadot/app-rpc authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-rpc authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { QueueTx } from '@polkadot/react-components/Status/types';
-import { Codec } from '@polkadot/types/types';
+import type { QueueTx } from '@polkadot/react-components/Status/types';
+import type { Codec } from '@polkadot/types/types';
 
 import React from 'react';
+
 import { Output } from '@polkadot/react-components';
 import { isUndefined } from '@polkadot/util';
 

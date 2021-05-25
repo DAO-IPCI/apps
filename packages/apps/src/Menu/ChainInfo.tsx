@@ -1,26 +1,24 @@
-// Copyright 2017-2020 @polkadot/apps authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { RuntimeVersion } from '@polkadot/types/interfaces';
+import type { RuntimeVersion } from '@polkadot/types/interfaces';
 
 import React from 'react';
 import styled from 'styled-components';
+
 import { ChainImg, Icon } from '@polkadot/react-components';
 import { useApi, useCall, useIpfs, useToggle } from '@polkadot/react-hooks';
 import { BestNumber, Chain } from '@polkadot/react-query';
 
 import Endpoints from '../Endpoints';
-import { useTranslation } from '../translate';
 
 interface Props {
   className?: string;
 }
 
 function ChainInfo ({ className }: Props): React.ReactElement<Props> {
-  const { t } = useTranslation();
-  const { api } = useApi();
-  const runtimeVersion = useCall<RuntimeVersion>(api.rpc.state.subscribeRuntimeVersion);
+  const { api, isApiReady } = useApi();
+  const runtimeVersion = useCall<RuntimeVersion>(isApiReady && api.rpc.state.subscribeRuntimeVersion);
   const { ipnsChain } = useIpfs();
   const [isEndpointsVisible, toggleEndpoints] = useToggle();
   const canToggle = !ipnsChain;
@@ -28,14 +26,14 @@ function ChainInfo ({ className }: Props): React.ReactElement<Props> {
   return (
     <div className={className}>
       <div
-        className={`apps--SideBar-logo-inner${canToggle ? ' isClickable  highlight--hover-color' : ''}`}
+        className={`apps--SideBar-logo-inner${canToggle ? ' isClickable' : ''} highlight--color-contrast`}
         onClick={toggleEndpoints}
       >
         <ChainImg />
         <div className='info media--1000'>
           <Chain className='chain' />
           {runtimeVersion && (
-            <div className='runtimeVersion'>{t<string>('version {{version}}', { replace: { version: runtimeVersion.specVersion.toNumber() } })}</div>
+            <div className='runtimeVersion'>{runtimeVersion.specName.toString()}/{runtimeVersion.specVersion.toNumber()}</div>
           )}
           <BestNumber
             className='bestNumber'
@@ -44,7 +42,7 @@ function ChainInfo ({ className }: Props): React.ReactElement<Props> {
         </div>
         {canToggle && (
           <Icon
-            className='dropdown highlight--color'
+            className='dropdown'
             icon={isEndpointsVisible ? 'caret-right' : 'caret-down'}
           />
         )}
@@ -58,7 +56,7 @@ function ChainInfo ({ className }: Props): React.ReactElement<Props> {
 
 export default React.memo(styled(ChainInfo)`
   box-sizing: border-box;
-  padding: 0.75rem 1rem 0.75rem 1.5rem;
+  padding: 0.5rem 1rem 0.5rem 0;
   margin: 0;
 
   .apps--SideBar-logo-inner {
@@ -71,7 +69,6 @@ export default React.memo(styled(ChainInfo)`
     }
 
     img {
-      flex: 0;
       height: 3rem;
       margin-right: 0.5rem;
       width: 3rem;
@@ -92,16 +89,24 @@ export default React.memo(styled(ChainInfo)`
     .info {
       flex: 1;
       padding-right: 0.5rem;
+      text-align: right;
 
-      .bestNumber,
       .chain {
+        max-width: 16rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .chain, .bestNumber {
         font-size: 0.9rem;
         line-height: 1.2;
       }
 
       .runtimeVersion {
-        font-size: 0.75rem;
-        line-height: 1.2;
+          font-size: 0.75rem;
+          line-height: 1.2;
+          letter-spacing: -0.01em;
       }
     }
   }

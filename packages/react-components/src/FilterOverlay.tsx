@@ -1,6 +1,5 @@
-// Copyright 2017-2020 @polkadot/react-components authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-components authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
 import styled from 'styled-components';
@@ -22,17 +21,21 @@ function FilterOverlay ({ children, className }: Props): React.ReactElement<Prop
 
 export default React.memo(styled(FilterOverlay)`
   display: none;
+  right: calc(50% - var(--width-half) + 1.5rem);
 
   .ui--Labelled label {
     display: none;
+  }
+
+  && .ui--Input {
+    margin: 0.29rem 0;
   }
 
   ${media.DESKTOP`
     display: flex;
     justify-content: flex-end;
     position: absolute;
-    right: 5rem;
-    top: 0.525rem;
+    top: 0rem;
 
     > div {
       max-width: 35rem !important;
@@ -45,5 +48,10 @@ export default React.memo(styled(FilterOverlay)`
     .ui.selection.dropdown {
       white-space: nowrap;
     }
-  `}
+  `};
+
+  /* hardcoded: var(--width-full) doesn't work in media */
+  @media (max-width: 1750px) {
+    right: 1.5rem;
+  }
 `);

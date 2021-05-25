@@ -1,6 +1,7 @@
-// Copyright 2017-2020 @polkadot/react-components authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-components authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import type { ThemeProps } from '../types';
 
 import { createGlobalStyle } from 'styled-components';
 
@@ -15,40 +16,97 @@ interface Props {
   uiHighlight?: string;
 }
 
-const defaultHighlight = '#f19135'; // #999
+const BRIGHTNESS = 128 + 32;
+const FACTORS = [0.2126, 0.7152, 0.0722];
+const PARTS = [0, 2, 4];
+const VERY_DARK = 16;
 
-const getHighlight = (props: Props): string =>
-  (props.uiHighlight || defaultHighlight);
+const defaultHighlight = '#f19135'; // '#f19135'; // #999
 
-export default createGlobalStyle<Props>`
+function getHighlight (uiHighlight: string | undefined): string {
+  return (uiHighlight || defaultHighlight);
+}
+
+function countBrightness (uiHighlight: string | undefined): number {
+  const hc = getHighlight(uiHighlight).replace('#', '').toLowerCase();
+
+  return PARTS.reduce((b, p, index) => b + (parseInt(hc.substr(p, 2), 16) * FACTORS[index]), 0);
+}
+
+function getContrast (uiHighlight: string | undefined): string {
+  const brightness = countBrightness(uiHighlight);
+
+  return brightness > BRIGHTNESS
+    ? 'rgba(45, 43, 41, 0.875)'
+    : 'rgba(255, 253, 251, 0.875)';
+}
+
+function getMenuHoverContrast (uiHighlight: string | undefined): string {
+  const brightness = countBrightness(uiHighlight);
+
+  if (brightness < VERY_DARK) {
+    return 'rgba(255, 255, 255, 0.15)';
+  }
+
+  return brightness < BRIGHTNESS
+    ? 'rgba(0, 0, 0, 0.15)'
+    : 'rgba(255, 255, 255, 0.15)';
+}
+
+export default createGlobalStyle<Props & ThemeProps>(({ theme, uiHighlight }: Props & ThemeProps) => `
   .highlight--all {
-    background: ${getHighlight} !important;
-    border-color: ${getHighlight} !important;
-    color: ${getHighlight} !important;
+    background: ${getHighlight(uiHighlight)} !important;
+    border-color: ${getHighlight(uiHighlight)} !important;
+    color: ${getHighlight(uiHighlight)} !important;
   }
 
   .highlight--before:before {
-    background: ${getHighlight} !important;
+    background: ${getHighlight(uiHighlight)} !important;
   }
 
   .highlight--before-border:before {
-    border-color: ${getHighlight} !important;
+    border-color: ${getHighlight(uiHighlight)} !important;
   }
 
   .highlight--bg {
-    background: ${getHighlight} !important;
+    background: ${getHighlight(uiHighlight)} !important;
   }
 
+  .highlight--bg-contrast {
+    background: ${getContrast(uiHighlight)};
+  }
+
+  .ui--MenuItem.isActive .ui--Badge {
+    background: ${getHighlight(uiHighlight)};
+    color: ${getContrast(uiHighlight)} !important;
+  }
+
+  .ui--MenuItem {
+    & .ui--Badge {
+      color: ${countBrightness(uiHighlight) < BRIGHTNESS ? '#fff' : '#424242'};
+    }
+
+    &:hover:not(.isActive) .ui--Badge {
+      background: ${countBrightness(uiHighlight) < BRIGHTNESS ? 'rgba(255, 255, 255, 0.8)' : '#4D4D4D'};
+      color: ${countBrightness(uiHighlight) > BRIGHTNESS ? '#fff' : '#424242'};
+    }
+  }
+
+  .ui--Tab .ui--Badge {
+    background: ${getHighlight(uiHighlight)};
+    color: ${countBrightness(uiHighlight) < BRIGHTNESS ? '#fff' : '#424242'};
+  }
+
+  .highlight--bg-faint,
   .highlight--bg-light {
-    background: white;
+    background: var(--bg-table);
     position: relative;
 
     &:before {
-      background: ${getHighlight};
+      background: ${getHighlight(uiHighlight)};
       bottom: 0;
       content: ' ';
       left: 0;
-      opacity: 0.09;
       position: absolute;
       right: 0;
       top: 0;
@@ -56,71 +114,109 @@ export default createGlobalStyle<Props>`
     }
   }
 
+  .highlight--bg-faint:before {
+    opacity: 0.025;
+  }
+
+  .highlight--bg-light:before {
+    opacity: 0.2;
+  }
+
   .highlight--border {
-    border-color: ${getHighlight} !important;
+    border-color: ${getHighlight(uiHighlight)} !important;
   }
 
   .highlight--color {
-    color: ${getHighlight} !important;
+    color: ${getHighlight(uiHighlight)} !important;
+  }
+
+  .highlight--color-contrast {
+    color: ${getContrast(uiHighlight)};
   }
 
   .highlight--fill {
-    fill: ${getHighlight} !important;
+    fill: ${getHighlight(uiHighlight)} !important;
   }
 
   .highlight--gradient {
-    background: ${(props: Props) => `linear-gradient(90deg, ${props.uiHighlight || defaultHighlight}, transparent)`};
+    background: ${`linear-gradient(90deg, ${uiHighlight || defaultHighlight}, transparent)`};
+  }
+
+  .ui--MenuItem.topLevel:hover,
+  .ui--MenuItem.isActive.topLevel:hover {
+    color: ${getContrast(uiHighlight)};
+
+    a {
+      background-color: ${getMenuHoverContrast(uiHighlight)};
+    }
+  }
+
+  .menuItems li:hover .groupHdr {
+    background: ${getMenuHoverContrast(uiHighlight)};
+    color: ${getContrast(uiHighlight)};
+  }
+
+  .groupMenu {
+    background: ${getHighlight(uiHighlight)} !important;
+
+    &::before {
+      background: ${getMenuHoverContrast(uiHighlight)};
+      color:  ${getContrast(uiHighlight)};
+    }
+    li {
+      color:  ${getContrast(uiHighlight)};
+    }
   }
 
   .highlight--hover-bg:hover {
-    background: ${getHighlight} !important;
+    background: ${getHighlight(uiHighlight)} !important;
   }
 
   .highlight--hover-color:hover {
-    color: ${getHighlight} !important;
+    color: ${getHighlight(uiHighlight)} !important;
   }
 
   .highlight--icon {
     .ui--Icon {
-      color: ${getHighlight} !important;
+      color: ${getHighlight(uiHighlight)} !important;
     }
   }
 
   .highlight--shadow {
-    box-shadow: 0 0 1px ${getHighlight} !important;
+    box-shadow: 0 0 1px ${getHighlight(uiHighlight)} !important;
   }
 
   .highlight--stroke {
-    stroke: ${getHighlight} !important;
+    stroke: ${getHighlight(uiHighlight)} !important;
   }
 
   .ui--Button {
     &:not(.isDisabled):not(.isIcon):not(.isBasic),
     &.withoutLink:not(.isDisabled) {
       .ui--Icon {
-        background: ${getHighlight};
-        color: #f5f5f4;
+        background: ${getHighlight(uiHighlight)};
+        color: ${getContrast(uiHighlight)};
       }
     }
 
     &.isBasic:not(.isDisabled):not(.isIcon):not(.isSelected) {
       &:not(.isReadOnly) {
-        box-shadow: 0 0 1px ${getHighlight};
+        box-shadow: 0 0 1px ${getHighlight(uiHighlight)};
       }
 
       .ui--Icon {
-        color: ${getHighlight};
+        color: ${getHighlight(uiHighlight)};
       }
     }
 
     &.isSelected {
-      box-shadow: 0 0 1px ${getHighlight};
+      box-shadow: 0 0 1px ${getHighlight(uiHighlight)};
     }
 
     &:hover:not(.isDisabled):not(.isReadOnly),
     &.isSelected {
-      background: ${getHighlight};
-      color: #f5f5f4;
+      background: ${getHighlight(uiHighlight)};
+      color: ${getContrast(uiHighlight)};
       text-shadow: none;
 
       &:not(.isIcon),
@@ -137,46 +233,43 @@ export default createGlobalStyle<Props>`
     &.withoutLink:not(.isDisabled) {
       &:hover {
         .ui--Icon {
-          color: #f5f5f4;
+          color: ${getContrast(uiHighlight)};
         }
       }
 
       .ui--Icon {
         background: transparent;
-        color: ${getHighlight};
+        color: inherit;
+        color: ${getHighlight(uiHighlight)};
       }
     }
   }
 
-  .theme--default {
-    .ui--Tabs-Tab.tabLinkActive {
-      border-bottom-color: ${getHighlight};
-    }
-
-    .ui.negative.button,
-    .ui.buttons .negative.button {
-      background: #666 !important;
+  .theme--dark,
+  .theme--light {
+    .ui--Tabs .tabLinkActive .tabLinkText::after{
+        background: ${getHighlight(uiHighlight)};
     }
 
     .ui.primary.button,
     .ui.buttons .primary.button {
-      background: ${getHighlight};
+      background: ${getHighlight(uiHighlight)};
 
       &.active,
       &:active,
       &:focus,
       &:hover {
-        background-color: ${getHighlight};
+        background-color: ${getHighlight(uiHighlight)};
       }
     }
 
     .ui--Toggle.isChecked {
       &:not(.isRadio) {
         .ui--Toggle-Slider {
-          background-color: ${getHighlight} !important;
+          background: ${getHighlight(uiHighlight)} !important;
 
           &:before {
-            border-color: ${getHighlight} !important;
+            border-color: ${getHighlight(uiHighlight)} !important;
           }
         }
       }
@@ -184,8 +277,9 @@ export default createGlobalStyle<Props>`
   }
 
   #root {
-    color: #4e4e4e;
-    font-family: sans-serif;
+    background: var(--bg-page);
+    color: var(--color-text);
+    font: var(--font-sans);
     height: 100%;
   }
 
@@ -194,7 +288,7 @@ export default createGlobalStyle<Props>`
   }
 
   article {
-    background: white;
+    background: var(--bg-table);
     border: 1px solid #f2f2f2;
     border-radius: 0.25rem;
     box-sizing: border-box;
@@ -227,6 +321,15 @@ export default createGlobalStyle<Props>`
         top: 0;
         z-index: -1;
       }
+    }
+
+    &.mark {
+      margin: 0.5rem 0 0.5rem 2.25rem;
+      padding: 0.5rem 1rem !important;
+    }
+
+    &.nomargin {
+      margin-left: 0;
     }
 
     &.extraMargin {
@@ -268,9 +371,9 @@ export default createGlobalStyle<Props>`
   }
 
   body {
-    background: #f5f3f1;
     height: 100%;
     margin: 0;
+    font: var(--font-sans);
   }
 
   br {
@@ -301,12 +404,14 @@ export default createGlobalStyle<Props>`
   }
 
   h1, h2, h3, h4, h5 {
-    color: rgba(0, 0, 0, .6);
-    font-family: sans-serif;
-    font-weight: 100;
+    color: var(--color-summary);
+    font: var(--font-sans);
+    font-weight: var(--font-weight-light);
+    margin-bottom: 0.25rem;
   }
 
   h1 {
+    font-size: 1.75rem;
     text-transform: lowercase;
 
     em {
@@ -315,8 +420,8 @@ export default createGlobalStyle<Props>`
     }
   }
 
-  h1, h2, h3, h4, h5 {
-    margin-bottom: 0.25rem;
+  h2 {
+    font-size: 1.71428571rem;
   }
 
   header {
@@ -334,11 +439,11 @@ export default createGlobalStyle<Props>`
 
   label {
     box-sizing: border-box;
-    color: rgba(78, 78, 78, .66);
+    color: var(--color-label);
     display: block;
-    font-family: sans-serif;
+    font: var(--font-sans);
     font-size: 1rem;
-    font-weight: 100;
+    font-weight: var(--font-weight-normal);
   }
 
   main {
@@ -348,10 +453,10 @@ export default createGlobalStyle<Props>`
   }
 
   /* Add our overrides */
-  ${cssSemantic}
+  ${cssSemantic(theme)}
   ${cssTheme}
   ${cssForm}
   ${cssMedia}
   ${cssRx}
-  ${cssComponents}
-`;
+  ${cssComponents(theme)}
+`);

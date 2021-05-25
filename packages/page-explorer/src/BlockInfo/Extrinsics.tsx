@@ -1,12 +1,13 @@
-// Copyright 2017-2020 @polkadot/app-explorer authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-explorer authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { BlockNumber, Extrinsic } from '@polkadot/types/interfaces';
-import { KeyedEvent } from '@polkadot/react-query/types';
+import type { KeyedEvent } from '@polkadot/react-query/types';
+import type { BlockNumber, Extrinsic } from '@polkadot/types/interfaces';
 
 import React, { useMemo } from 'react';
+
 import { Table } from '@polkadot/react-components';
+import { useApi } from '@polkadot/react-hooks';
 
 import { useTranslation } from '../translate';
 import ExtrinsicDisplay from './Extrinsic';
@@ -21,11 +22,13 @@ interface Props {
 
 function Extrinsics ({ blockNumber, className = '', events, label, value }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
+  const { api } = useApi();
 
   const header = useMemo(() => [
     [label || t<string>('extrinsics'), 'start', 2],
-    [t('events'), 'start', 2],
-    [t('signer'), 'address']
+    [t('events'), 'start media--1000', 2],
+    [t('weight'), 'media--1400'],
+    [t('signer'), 'address media--1200']
   ], [label, t]);
 
   return (
@@ -41,6 +44,7 @@ function Extrinsics ({ blockNumber, className = '', events, label, value }: Prop
           events={events}
           index={index}
           key={`extrinsic:${index}`}
+          maxBlockWeight={api.consts.system.blockWeights?.maxBlock}
           value={extrinsic}
         />
       )}

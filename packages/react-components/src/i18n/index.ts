@@ -1,11 +1,11 @@
-// Copyright 2017-2020 @polkadot/react-components authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-components authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import i18next from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
-import uiSettings, { LANGUAGE_DEFAULT } from '@polkadot/ui-settings';
+
+import { LANGUAGE_DEFAULT, settings } from '@polkadot/ui-settings';
 
 import Backend from './Backend';
 
@@ -13,7 +13,7 @@ const languageDetector = new LanguageDetector();
 
 languageDetector.addDetector({
   lookup: () => {
-    const i18nLang = uiSettings.i18nLang;
+    const i18nLang = settings.i18nLang;
 
     return i18nLang === LANGUAGE_DEFAULT
       ? undefined
@@ -47,7 +47,6 @@ i18next
       'app-claims',
       'app-contracts',
       'app-council',
-      'app-dashboard',
       'app-democracy',
       'app-explorer',
       'app-extrinsics',
@@ -83,7 +82,7 @@ i18next
     console.log('i18n: failure', error)
   );
 
-uiSettings.on('change', (settings): void => {
+settings.on('change', (settings): void => {
   i18next.changeLanguage(
     settings.i18nLang === LANGUAGE_DEFAULT
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access

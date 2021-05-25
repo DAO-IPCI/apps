@@ -1,6 +1,5 @@
-// Copyright 2017-2020 @polkadot/apps-config authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps-config authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import BN from 'bn.js';
 
@@ -8,12 +7,10 @@ import { externalLogos } from '../ui/logos';
 
 export default {
   chains: {
-    // 'Centrifuge Mainnet': 'centrifuge',
-    // Edgeware: 'edgeware',
-    Kulupu: 'kulupu',
+    // Kulupu: 'kulupu',
     Kusama: 'kusama',
     Polkadot: 'polkadot',
-    'Polkadot CC1': 'polkadot-cc1'
+    Rococo: 'rococo'
   },
   create: (chain: string, path: string, data: BN | number | string): string =>
     `https://polkascan.io/${chain}/${path}/${data.toString()}`,

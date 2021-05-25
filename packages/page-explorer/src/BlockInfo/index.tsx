@@ -1,12 +1,10 @@
-// Copyright 2017-2020 @polkadot/app-explorer authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
-
-import { BlockNumber } from '@polkadot/types/interfaces';
+// Copyright 2017-2021 @polkadot/app-explorer authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useApi, useCall } from '@polkadot/react-hooks';
+
+import { useBestNumber } from '@polkadot/react-hooks';
 import { isHex } from '@polkadot/util';
 
 import Query from '../Query';
@@ -14,8 +12,7 @@ import BlockByHash from './ByHash';
 import BlockByNumber from './ByNumber';
 
 function Entry (): React.ReactElement | null {
-  const { api } = useApi();
-  const bestNumber = useCall<BlockNumber>(api.derive.chain.bestNumber);
+  const bestNumber = useBestNumber();
   const { value } = useParams<{ value: string }>();
   const [stateValue, setStateValue] = useState<string | undefined>(value);
 

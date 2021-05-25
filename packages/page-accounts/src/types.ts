@@ -1,10 +1,9 @@
-// Copyright 2017-2020 @polkadot/app-accounts authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-accounts authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { ActionStatus } from '@polkadot/react-components/Status/types';
-import { Balance, Conviction } from '@polkadot/types/interfaces';
-import { KeyringAddress } from '@polkadot/ui-keyring/types';
+import type { ActionStatus } from '@polkadot/react-components/Status/types';
+import type { Balance, Conviction } from '@polkadot/types/interfaces';
+import type { KeyringAddress } from '@polkadot/ui-keyring/types';
 
 import { WithTranslation } from 'react-i18next';
 
@@ -32,4 +31,37 @@ export interface SortedAccount {
   children: SortedAccount[];
   delegation?: Delegation;
   isFavorite: boolean;
+}
+
+export type PairType = 'ecdsa' | 'ed25519' | 'ed25519-ledger' | 'ethereum' | 'sr25519';
+
+export interface CreateProps extends ModalProps {
+  className?: string;
+  onClose: () => void;
+  onStatusChange: (status: ActionStatus) => void;
+  seed?: string;
+  type?: PairType;
+}
+
+export type SeedType = 'bip' | 'raw' | 'dev';
+
+export interface AddressState {
+  address: string | null;
+  derivePath: string;
+  deriveValidation?: DeriveValidationOutput
+  isSeedValid: boolean;
+  pairType: PairType;
+  seed: string;
+  seedType: SeedType;
+}
+
+export interface CreateOptions {
+  genesisHash?: string;
+  name: string;
+  tags?: string[];
+}
+
+export interface DeriveValidationOutput {
+  error?: string;
+  warning?: string;
 }

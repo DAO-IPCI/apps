@@ -1,14 +1,13 @@
-// Copyright 2017-2020 @polkadot/apps authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { BareProps as Props } from '@polkadot/react-components/types';
+import type { BareProps as Props, ThemeDef } from '@polkadot/react-components/types';
 
-import React, { useMemo } from 'react';
-import styled from 'styled-components';
+import React, { useContext, useMemo } from 'react';
+import styled, { ThemeContext } from 'styled-components';
+
 import AccountSidebar from '@polkadot/app-accounts/Sidebar';
-import { getSystemChainColor } from '@polkadot/apps-config/ui';
-import { defaultColor } from '@polkadot/apps-config/ui/general';
+import { getSystemColor } from '@polkadot/apps-config';
 import GlobalStyle from '@polkadot/react-components/styles';
 import { useApi } from '@polkadot/react-hooks';
 import Signer from '@polkadot/react-signer';
@@ -21,17 +20,18 @@ import WarmUp from './WarmUp';
 export const PORTAL_ID = 'portals';
 
 function Apps ({ className = '' }: Props): React.ReactElement<Props> {
-  const { systemChain, systemName } = useApi();
+  const { theme } = useContext<ThemeDef>(ThemeContext);
+  const { specName, systemChain, systemName } = useApi();
 
   const uiHighlight = useMemo(
-    () => getSystemChainColor(systemChain, systemName),
-    [systemChain, systemName]
+    () => getSystemColor(systemChain, systemName, specName),
+    [specName, systemChain, systemName]
   );
 
   return (
     <>
-      <GlobalStyle uiHighlight={defaultColor || uiHighlight} />
-      <div className={`apps--Wrapper theme--default ${className}`}>
+      <GlobalStyle uiHighlight={uiHighlight} />
+      <div className={`apps--Wrapper theme--${theme} ${className}`}>
         <Menu />
         <AccountSidebar>
           <Signer>
@@ -47,6 +47,7 @@ function Apps ({ className = '' }: Props): React.ReactElement<Props> {
 }
 
 export default React.memo(styled(Apps)`
+  background: var(--bg-page);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;

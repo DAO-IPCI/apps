@@ -1,14 +1,14 @@
-// Copyright 2017-2020 @polkadot/apps authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { Route } from '@polkadot/apps-routing/types';
+import type { Route } from '@polkadot/apps-routing/types';
 
 import React, { Suspense, useContext, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+
 import createRoutes from '@polkadot/apps-routing';
-import { ErrorBoundary, Spinner, StatusContext } from '@polkadot/react-components';
+import { ErrorBoundary, SectionContext, Spinner, StatusContext } from '@polkadot/react-components';
 import { useApi } from '@polkadot/react-hooks';
 
 import { findMissingApis } from '../endpoint';
@@ -38,7 +38,7 @@ function Content ({ className }: Props): React.ReactElement<Props> {
   const { api, isApiConnected, isApiReady } = useApi();
   const { queueAction } = useContext(StatusContext);
 
-  const { Component, display: { needsApi }, name } = useMemo(
+  const { Component, display: { needsApi }, icon, name, text } = useMemo(
     (): Route => {
       const app = location.pathname.slice(1) || '';
 
@@ -61,23 +61,25 @@ function Content ({ className }: Props): React.ReactElement<Props> {
           <>
             <Suspense fallback='...'>
               <ErrorBoundary trigger={name}>
-                {missingApis.length
-                  ? (
-                    <NotFound
-                      basePath={`/${name}`}
-                      location={location}
-                      missingApis={missingApis}
-                      onStatusChange={queueAction}
-                    />
-                  )
-                  : (
-                    <Component
-                      basePath={`/${name}`}
-                      location={location}
-                      onStatusChange={queueAction}
-                    />
-                  )
-                }
+                <SectionContext.Provider value={{ icon, text }}>
+                  {missingApis.length
+                    ? (
+                      <NotFound
+                        basePath={`/${name}`}
+                        location={location}
+                        missingApis={missingApis}
+                        onStatusChange={queueAction}
+                      />
+                    )
+                    : (
+                      <Component
+                        basePath={`/${name}`}
+                        location={location}
+                        onStatusChange={queueAction}
+                      />
+                    )
+                  }
+                </SectionContext.Provider>
               </ErrorBoundary>
             </Suspense>
             <Status />
@@ -90,17 +92,20 @@ function Content ({ className }: Props): React.ReactElement<Props> {
 
 export default React.memo(styled(Content)`
   flex-grow: 1;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: 0 2rem 1rem;
+  overflow: hidden auto;
+  padding: 0 0 1rem 0;
   position: relative;
   width: 100%;
 
-  @media(max-width: 768px) {
-    padding: 0 0.5rem;
-  }
-
   .connecting {
     padding: 3.5rem 0;
+  }
+
+  & main > *:not(header):not(.hasOwnMaxWidth) {
+    max-width: var(--width-full);
+    margin-right: auto;
+    margin-left: auto;
+    width: 100%;
+    padding: 0 1.5rem;
   }
 `);

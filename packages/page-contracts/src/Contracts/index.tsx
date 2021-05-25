@@ -1,103 +1,104 @@
-// Copyright 2017-2020 @polkadot/app-staking authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-contracts authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { StringOrNull } from '@polkadot/react-components/types';
-import { ComponentProps as Props } from '../types';
+import type { AppProps as Props } from '@polkadot/react-components/types';
 
-import React, { useState, useEffect } from 'react';
-import { ApiPromise } from '@polkadot/api';
-import { PromiseContract as ApiContract } from '@polkadot/api-contract';
-import { Button, CardGrid } from '@polkadot/react-components';
-import { useApi } from '@polkadot/react-hooks';
+import React, { useCallback, useState } from 'react';
+import styled from 'styled-components';
 
+import { Button } from '@polkadot/react-components';
+import { useToggle } from '@polkadot/react-hooks';
+
+import Codes from '../Codes';
+import CodeAdd from '../Codes/Add';
+import CodeUpload from '../Codes/Upload';
+import ContractAdd from '../Contracts/Add';
+import ContractsTable from '../Contracts/ContractsTable';
 import { useTranslation } from '../translate';
-import Add from './Add';
-import ContractCard from './Contract';
-import Call from './Call';
-import { getContractForAddress } from './util';
+import { useCodes } from '../useCodes';
+import { useContracts } from '../useContracts';
+import Deploy from './Deploy';
+import Summary from './Summary';
 
-function filterContracts (api: ApiPromise, { accounts, contracts: keyringContracts }: Props): ApiContract[] {
-  return accounts && keyringContracts && keyringContracts
-    .map((address): ApiContract | null => getContractForAddress(api, address.toString()))
-    .filter((contract: ApiContract | null): boolean => !!contract) as ApiContract[];
-}
-
-function Contracts (props: Props): React.ReactElement<Props> {
+function Contracts ({ className = '' }: Props): React.ReactElement<Props> {
   const { t } = useTranslation();
-  const { api } = useApi();
-  const { accounts, contracts: keyringContracts, hasCode, onShowDeploy } = props;
-  const [contracts, setContracts] = useState<ApiContract[]>(filterContracts(api, props));
-  const [callContractIndex, setCallContractIndex] = useState<number>(0);
-  const [callMessageIndex, setCallMessageIndex] = useState<number>(0);
-  const [isCallOpen, setIsCallOpen] = useState(false);
+  const { allCodes, codeTrigger } = useCodes();
+  const { allContracts } = useContracts();
+  const [isAddOpen, toggleAdd] = useToggle();
+  const [isDeployOpen, toggleDeploy, setIsDeployOpen] = useToggle();
+  const [isHashOpen, toggleHash] = useToggle();
+  const [isUploadOpen, toggleUpload] = useToggle();
+  const [codeHash, setCodeHash] = useState<string | undefined>();
+  const [constructorIndex, setConstructorIndex] = useState(0);
 
-  useEffect((): void => {
-    setContracts(filterContracts(api, props));
-  }, [accounts, api, keyringContracts, props]);
+  const _onShowDeploy = useCallback(
+    (codeHash: string, constructorIndex: number): void => {
+      setCodeHash(codeHash || (allCodes && allCodes[0] ? allCodes[0].json.codeHash : undefined));
+      setConstructorIndex(constructorIndex);
+      toggleDeploy();
+    },
+    [allCodes, toggleDeploy]
+  );
 
-  const callContract = contracts[callContractIndex] || null;
-
-  const _toggleCall = (): void => setIsCallOpen(!isCallOpen);
-
-  const _onChangeCallContractAddress = (newCallContractAddress: StringOrNull): void => {
-    const index = contracts.findIndex(({ address }: ApiContract): boolean => newCallContractAddress === address.toString());
-
-    if (index > -1) {
-      index !== callContractIndex && setCallMessageIndex(0);
-      setCallContractIndex(index);
-    }
-  };
-
-  const _onChangeCallMessageIndex = (callMessageIndex: number): void => {
-    !!callContract && setCallMessageIndex(callMessageIndex);
-  };
-
-  const _onCall = (callContractIndex: number): (_?: number) => () => void => {
-    return function (callMessageIndex?: number): () => void {
-      return function (): void {
-        setCallContractIndex(callContractIndex);
-        setCallMessageIndex(callMessageIndex || 0);
-        setIsCallOpen(true);
-      };
-    };
-  };
+  const _onCloseDeploy = useCallback(
+    () => setIsDeployOpen(false),
+    [setIsDeployOpen]
+  );
 
   return (
-    <>
-      <CardGrid
-        buttons={
-          <Button.Group isCentered>
-            {hasCode && (
-              <Button
-                icon='upload'
-                label={t('Deploy a code hash')}
-                onClick={onShowDeploy()}
-              />
-            )}
-            <Add />
-          </Button.Group>
-        }
-        emptyText={t<string>('No contracts available')}
-      >
-        {contracts.map((contract: ApiContract, index): React.ReactNode => (
-          <ContractCard
-            contract={contract}
-            key={contract.address.toString()}
-            onCall={_onCall(index)}
-          />
-        ))}
-      </CardGrid>
-      <Call
-        callContract={callContract}
-        callMessageIndex={callMessageIndex}
-        isOpen={isCallOpen}
-        onChangeCallContractAddress={_onChangeCallContractAddress}
-        onChangeCallMessageIndex={_onChangeCallMessageIndex}
-        onClose={_toggleCall}
+    <div className={className}>
+      <Summary trigger={codeTrigger} />
+      <Button.Group>
+        <Button
+          icon='plus'
+          label={t('Upload & deploy code')}
+          onClick={toggleUpload}
+        />
+        <Button
+          icon='plus'
+          label={t('Add an existing code hash')}
+          onClick={toggleHash}
+        />
+        <Button
+          icon='plus'
+          label={t('Add an existing contract')}
+          onClick={toggleAdd}
+        />
+      </Button.Group>
+      <ContractsTable
+        contracts={allContracts}
+        updated={codeTrigger}
       />
-    </>
+      <Codes
+        onShowDeploy={_onShowDeploy}
+        updated={codeTrigger}
+      />
+      {codeHash && isDeployOpen && (
+        <Deploy
+          codeHash={codeHash}
+          constructorIndex={constructorIndex}
+          onClose={_onCloseDeploy}
+          setConstructorIndex={setConstructorIndex}
+        />
+      )}
+      {isUploadOpen && (
+        <CodeUpload onClose={toggleUpload} />
+      )}
+      {isHashOpen && (
+        <CodeAdd onClose={toggleHash} />
+      )}
+      {isAddOpen && (
+        <ContractAdd onClose={toggleAdd} />
+      )}
+    </div>
   );
 }
 
-export default React.memo(Contracts);
+export default React.memo(styled(Contracts)`
+  .ui--Table td > article {
+    background: transparent;
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+`);

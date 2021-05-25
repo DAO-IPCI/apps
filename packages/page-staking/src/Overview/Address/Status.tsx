@@ -1,26 +1,56 @@
-// Copyright 2017-2020 @polkadot/app-staking authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-staking authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import BN from 'bn.js';
-import React from 'react';
+import React, { useMemo } from 'react';
+
 import { Badge, Icon } from '@polkadot/react-components';
+import { useAccounts } from '@polkadot/react-hooks';
 
 import MaxBadge from '../../MaxBadge';
 
 interface Props {
   isElected: boolean;
   isMain?: boolean;
-  numNominators?: number;
+  isPara?: boolean;
+  isRelay?: boolean;
+  nominators?: { nominatorId: string }[];
   onlineCount?: false | BN;
   onlineMessage?: boolean;
 }
 
-function Status ({ isElected, isMain, numNominators, onlineCount, onlineMessage }: Props): React.ReactElement<Props> {
+const NO_NOMS: { nominatorId: string }[] = [];
+
+function Status ({ isElected, isMain, isPara, isRelay, nominators = NO_NOMS, onlineCount, onlineMessage }: Props): React.ReactElement<Props> {
+  const { allAccounts } = useAccounts();
   const blockCount = onlineCount && onlineCount.toNumber();
+
+  const isNominating = useMemo(
+    () => nominators.some(({ nominatorId }) => allAccounts.includes(nominatorId)),
+    [allAccounts, nominators]
+  );
 
   return (
     <>
+      {isNominating
+        ? (
+          <Badge
+            color='green'
+            icon='hand-paper'
+          />
+        )
+        : <Badge color='transparent' />
+      }
+      {isRelay && (
+        isPara
+          ? (
+            <Badge
+              color='purple'
+              icon='vector-square'
+            />
+          )
+          : <Badge color='transparent' />
+      )}
       {isElected
         ? (
           <Badge
@@ -40,7 +70,7 @@ function Status ({ isElected, isMain, numNominators, onlineCount, onlineMessage 
           )
           : <Badge color='transparent' />
       )}
-      <MaxBadge numNominators={numNominators} />
+      <MaxBadge numNominators={nominators.length} />
     </>
   );
 }

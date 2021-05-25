@@ -1,87 +1,74 @@
-// Copyright 2017-2020 @polkadot/app-contracts authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-contracts authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { ContractABIPre } from '@polkadot/api-contract/types';
-import { Hash } from '@polkadot/types/interfaces';
-import { CodeJson, CodeStored } from './types';
+import type { Hash } from '@polkadot/types/interfaces';
+import type { CodeJson, CodeStored } from './types';
 
 import EventEmitter from 'eventemitter3';
 import store from 'store';
+
 import { Abi } from '@polkadot/api-contract';
-import { api, registry } from '@polkadot/react-api';
-import { createType } from '@polkadot/types';
+import { api } from '@polkadot/react-api';
+import { isString } from '@polkadot/util';
 
 const KEY_CODE = 'code:';
 
 class Store extends EventEmitter {
-  private allCode: Record<string, CodeStored> = {};
+  #allCode: Record<string, CodeStored> = {};
 
   public get hasCode (): boolean {
-    return Object.keys(this.allCode).length !== 0;
+    return Object.keys(this.#allCode).length !== 0;
   }
 
   public getAllCode (): CodeStored[] {
-    return Object.values(this.allCode);
+    return Object.values(this.#allCode);
   }
 
-  public getCode (codeHash: string): CodeStored {
-    return this.allCode[codeHash];
+  public getCode (codeHash: string): CodeStored | undefined {
+    return this.#allCode[codeHash];
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  public async saveCode (codeHash: string | Hash, partial: Partial<CodeJson>): Promise<void> {
-    const hex = (typeof codeHash === 'string' ? createType(registry, 'Hash', codeHash) : codeHash).toHex();
-
-    const existing = this.getCode(hex);
-
+  public saveCode (_codeHash: string | Hash, partial: Partial<CodeJson>): void {
+    const codeHash = (isString(_codeHash) ? api.registry.createType('Hash', _codeHash) : _codeHash).toHex();
+    const existing = this.getCode(codeHash);
     const json = {
       ...(existing ? existing.json : {}),
       ...partial,
-      codeHash: hex,
-      genesisHash: api.genesisHash.toHex()
+      codeHash,
+      genesisHash: api.genesisHash.toHex(),
+      whenCreated: existing?.json.whenCreated || Date.now()
     };
+    const key = `${KEY_CODE}${json.codeHash}`;
 
-    store.set(`${KEY_CODE}${json.codeHash}`, json);
-
-    this.addCode(json as CodeJson);
+    store.set(key, json);
+    this.addCode(key, json as CodeJson);
   }
 
   public forgetCode (codeHash: string): void {
-    store.remove(`${KEY_CODE}${codeHash}`);
-
-    this.removeCode(codeHash);
+    this.removeCode(`${KEY_CODE}${codeHash}`, codeHash);
   }
 
-  public async loadAll (): Promise<void> {
+  public loadAll (onLoaded?: () => void): void {
     try {
-      await api.isReady;
-
       const genesisHash = api.genesisHash.toHex();
 
       store.each((json: CodeJson, key: string): void => {
-        if (json && json.genesisHash !== genesisHash) {
-          return;
-        }
-
-        if (key.startsWith(KEY_CODE)) {
-          this.addCode(json);
+        if (json && json.genesisHash === genesisHash && key.startsWith(KEY_CODE)) {
+          this.addCode(key, json);
         }
       });
+
+      onLoaded && onLoaded();
     } catch (error) {
       console.error('Unable to load code', error);
     }
   }
 
-  private addCode (json: CodeJson): void {
+  private addCode (key: string, json: CodeJson): void {
     try {
-      const abi = json.abi
-        ? JSON.parse(json.abi) as ContractABIPre
-        : null;
-
-      this.allCode[json.codeHash] = {
-        contractAbi: abi
-          ? new Abi(registry, abi)
+      this.#allCode[json.codeHash] = {
+        contractAbi: json.abi
+          ? new Abi(json.abi, api.registry.getChainProperties())
           : undefined,
         json
       };
@@ -89,12 +76,14 @@ class Store extends EventEmitter {
       this.emit('new-code');
     } catch (error) {
       console.error(error);
+      this.removeCode(key, json.codeHash);
     }
   }
 
-  private removeCode (codeHash: string): void {
+  private removeCode (key: string, codeHash: string): void {
     try {
-      delete this.allCode[codeHash];
+      delete this.#allCode[codeHash];
+      store.remove(key);
       this.emit('removed-code');
     } catch (error) {
       console.error(error);

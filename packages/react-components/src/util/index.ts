@@ -1,9 +1,7 @@
-// Copyright 2017-2020 @polkadot/react-components authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-components authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 export { default as checkVisibility } from './checkVisibility';
-export { default as classes } from './classes';
 export { default as getAddressMeta } from './getAddressMeta';
 export { default as getAddressName } from './getAddressName';
 export { default as getAddressTags } from './getAddressTags';

@@ -1,24 +1,26 @@
-// Copyright 2017-2020 @polkadot/app-staking authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-staking authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { Balance, EraIndex, SlashingSpans, ValidatorPrefs } from '@polkadot/types/interfaces';
-import { DeriveAccountInfo } from '@polkadot/api-derive/types';
-import { ValidatorInfo } from '../../types';
+import type { DeriveAccountInfo, DeriveHeartbeatAuthor } from '@polkadot/api-derive/types';
+import type { Option } from '@polkadot/types';
+import type { SlashingSpans, ValidatorPrefs } from '@polkadot/types/interfaces';
+import type { NominatedBy as NominatedByType, ValidatorInfo } from '../../types';
+import type { NominatorValue } from './types';
 
 import BN from 'bn.js';
 import React, { useCallback, useMemo } from 'react';
+
 import { ApiPromise } from '@polkadot/api';
 import { AddressSmall, Icon, LinkExternal } from '@polkadot/react-components';
 import { checkVisibility } from '@polkadot/react-components/util';
 import { useApi, useCall } from '@polkadot/react-hooks';
 import { FormatBalance } from '@polkadot/react-query';
-import { Option } from '@polkadot/types';
+import { BN_ZERO } from '@polkadot/util';
 
 import Favorite from './Favorite';
 import NominatedBy from './NominatedBy';
-import Status from './Status';
 import StakeOther from './StakeOther';
+import Status from './Status';
 
 interface Props {
   address: string;
@@ -28,11 +30,11 @@ interface Props {
   isElected: boolean;
   isFavorite: boolean;
   isMain?: boolean;
+  isPara?: boolean;
   lastBlock?: string;
-  nominatedBy?: [string, EraIndex, number][];
-  onlineCount?: false | BN;
-  onlineMessage?: boolean;
+  nominatedBy?: NominatedByType[];
   points?: string;
+  recentlyOnline?: DeriveHeartbeatAuthor;
   toggleFavorite: (accountId: string) => void;
   validatorInfo?: ValidatorInfo;
   withIdentity: boolean;
@@ -40,21 +42,21 @@ interface Props {
 
 interface StakingState {
   commission?: string;
-  nominators: [string, Balance][];
+  nominators: NominatorValue[];
   stakeTotal?: BN;
   stakeOther?: BN;
   stakeOwn?: BN;
 }
 
 function expandInfo ({ exposure, validatorPrefs }: ValidatorInfo): StakingState {
-  let nominators: [string, Balance][] = [];
+  let nominators: NominatorValue[] = [];
   let stakeTotal: BN | undefined;
   let stakeOther: BN | undefined;
   let stakeOwn: BN | undefined;
 
-  if (exposure) {
-    nominators = exposure.others.map(({ value, who }): [string, Balance] => [who.toString(), value.unwrap()]);
-    stakeTotal = exposure.total.unwrap();
+  if (exposure && exposure.total) {
+    nominators = exposure.others.map(({ value, who }) => ({ nominatorId: who.toString(), value: value.unwrap() }));
+    stakeTotal = exposure.total?.unwrap() || BN_ZERO;
     stakeOwn = exposure.own.unwrap();
     stakeOther = stakeTotal.sub(stakeOwn);
   }
@@ -82,12 +84,14 @@ function useAddressCalls (api: ApiPromise, address: string, isMain?: boolean) {
   return { accountInfo, slashingSpans };
 }
 
-function Address ({ address, className = '', filterName, hasQueries, isElected, isFavorite, isMain, lastBlock, nominatedBy, onlineCount, onlineMessage, points, toggleFavorite, validatorInfo, withIdentity }: Props): React.ReactElement<Props> | null {
+function Address ({ address, className = '', filterName, hasQueries, isElected, isFavorite, isMain, isPara, lastBlock, nominatedBy, points, recentlyOnline, toggleFavorite, validatorInfo, withIdentity }: Props): React.ReactElement<Props> | null {
   const { api } = useApi();
   const { accountInfo, slashingSpans } = useAddressCalls(api, address, isMain);
 
   const { commission, nominators, stakeOther, stakeOwn } = useMemo(
-    () => validatorInfo ? expandInfo(validatorInfo) : { nominators: [] },
+    () => validatorInfo
+      ? expandInfo(validatorInfo)
+      : { nominators: [] },
     [validatorInfo]
   );
 
@@ -118,9 +122,11 @@ function Address ({ address, className = '', filterName, hasQueries, isElected, 
         <Status
           isElected={isElected}
           isMain={isMain}
-          numNominators={(nominatedBy || nominators).length}
-          onlineCount={onlineCount}
-          onlineMessage={onlineMessage}
+          isPara={isPara}
+          isRelay={!!(api.query.parasShared || api.query.shared)?.activeValidatorIndices}
+          nominators={isMain ? nominators : nominatedBy}
+          onlineCount={recentlyOnline?.blockCount}
+          onlineMessage={recentlyOnline?.hasMessage}
         />
       </td>
       <td className='address'>
@@ -140,11 +146,13 @@ function Address ({ address, className = '', filterName, hasQueries, isElected, 
           />
         )
       }
-      <td className='number media--1100'>
-        {stakeOwn?.gtn(0) && (
-          <FormatBalance value={stakeOwn} />
-        )}
-      </td>
+      {isMain && (
+        <td className='number media--1100'>
+          {stakeOwn?.gtn(0) && (
+            <FormatBalance value={stakeOwn} />
+          )}
+        </td>
+      )}
       <td className='number'>
         {commission}
       </td>
@@ -161,6 +169,7 @@ function Address ({ address, className = '', filterName, hasQueries, isElected, 
       <td>
         {hasQueries && (
           <Icon
+            className='highlight--color'
             icon='chart-line'
             onClick={_onQueryStats}
           />

@@ -1,20 +1,19 @@
-// Copyright 2017-2020 @polkadot/app-staking authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-staking authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { AccountId, AccountIndex, Address } from '@polkadot/types/interfaces';
+import type { AccountId, AccountIndex, Address } from '@polkadot/types/interfaces';
+import type { KeyringItemType } from '@polkadot/ui-keyring/types';
 
 import BN from 'bn.js';
 import React from 'react';
 import styled from 'styled-components';
-import { KeyringItemType } from '@polkadot/ui-keyring/types';
 
-import { classes, toShortAddress } from './util';
 import AccountName from './AccountName';
 import BalanceDisplay from './Balance';
 import BondedDisplay from './Bonded';
 import IdentityIcon from './IdentityIcon';
 import LockedVote from './LockedVote';
+import { toShortAddress } from './util';
 
 interface Props {
   balance?: BN | BN[];
@@ -27,6 +26,7 @@ interface Props {
   isShort?: boolean;
   label?: React.ReactNode;
   labelBalance?: React.ReactNode;
+  nameExtra?: React.ReactNode;
   summary?: React.ReactNode;
   type?: KeyringItemType;
   value?: AccountId | AccountIndex | Address | string | null | Uint8Array;
@@ -39,13 +39,13 @@ interface Props {
   withShrink?: boolean;
 }
 
-function AddressMini ({ balance, bonded, children, className = '', iconInfo, isHighlight, isPadded = true, label, labelBalance, summary, value, withAddress = true, withBalance = false, withBonded = false, withLockedVote = false, withName = true, withShrink = false, withSidebar = true }: Props): React.ReactElement<Props> | null {
+function AddressMini ({ balance, bonded, children, className = '', iconInfo, isHighlight, isPadded = true, label, labelBalance, nameExtra, summary, value, withAddress = true, withBalance = false, withBonded = false, withLockedVote = false, withName = true, withShrink = false, withSidebar = true }: Props): React.ReactElement<Props> | null {
   if (!value) {
     return null;
   }
 
   return (
-    <div className={classes('ui--AddressMini', isHighlight ? 'isHighlight' : '', isPadded ? 'padded' : '', withShrink ? 'withShrink' : '', className)}>
+    <div className={`ui--AddressMini${isHighlight ? ' isHighlight' : ''}${isPadded ? ' padded' : ''}${withShrink ? ' withShrink' : ''} ${className}`}>
       {label && (
         <label className='ui--AddressMini-label'>{label}</label>
       )}
@@ -65,7 +65,9 @@ function AddressMini ({ balance, bonded, children, className = '', iconInfo, isH
                 <AccountName
                   value={value}
                   withSidebar={withSidebar}
-                />
+                >
+                  {nameExtra}
+                </AccountName>
               )
               : toShortAddress(value)
             }

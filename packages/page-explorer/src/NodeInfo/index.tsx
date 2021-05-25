@@ -1,10 +1,10 @@
-// Copyright 2017-2020 @polkadot/app-nodeinfo authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-nodeinfo authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { Info } from './types';
+import type { Info } from './types';
 
 import React, { useEffect, useState } from 'react';
+
 import { ApiPromise } from '@polkadot/api';
 import { useApi } from '@polkadot/react-hooks';
 
@@ -34,7 +34,7 @@ function NodeInfo (): React.ReactElement {
   const { t } = useTranslation();
   const { api } = useApi();
   const [info, setInfo] = useState<Partial<Info>>({});
-  const [nextRefresh, setNextRefresh] = useState(Date.now());
+  const [nextRefresh, setNextRefresh] = useState(() => Date.now());
 
   useEffect((): () => void => {
     const _getStatus = (): void => {

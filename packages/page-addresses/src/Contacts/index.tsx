@@ -1,16 +1,16 @@
-// Copyright 2017-2020 @polkadot/app-addresses authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-addresses authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { ComponentProps as Props } from '../types';
+import type { ComponentProps as Props } from '../types';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
+
 import { Button, Input, Table } from '@polkadot/react-components';
 import { useAddresses, useFavorites, useLoadingDelay, useToggle } from '@polkadot/react-hooks';
 
-import { useTranslation } from '../translate';
 import CreateModal from '../modals/Create';
+import { useTranslation } from '../translate';
 import Address from './Address';
 
 type SortedAddress = { address: string; isFavorite: boolean };
@@ -30,7 +30,7 @@ function Overview ({ className = '', onStatusChange }: Props): React.ReactElemen
     [t('contacts'), 'start', 2],
     [t('tags'), 'start'],
     [t('transactions'), 'media--1500'],
-    [t('balances')],
+    [t('balances'), 'expand'],
     [],
     [undefined, 'media--1400']
   ]);
@@ -81,7 +81,7 @@ function Overview ({ className = '', onStatusChange }: Props): React.ReactElemen
         filter={filter}
         header={headerRef.current}
       >
-        {isLoading ? undefined : sortedAddresses?.map(({ address, isFavorite }): React.ReactNode => (
+        {!isLoading && sortedAddresses?.map(({ address, isFavorite }): React.ReactNode => (
           <Address
             address={address}
             filter={filterOn}

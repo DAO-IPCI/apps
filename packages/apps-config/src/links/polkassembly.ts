@@ -1,6 +1,5 @@
-// Copyright 2017-2020 @polkadot/apps-config authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps-config authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import BN from 'bn.js';
 
@@ -17,6 +16,7 @@ export default {
   isActive: true,
   logo: externalLogos.polkassembly as string,
   paths: {
+    bounty: 'bounty',
     council: 'motion',
     proposal: 'proposal',
     referendum: 'referendum',

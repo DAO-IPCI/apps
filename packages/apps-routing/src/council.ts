@@ -1,17 +1,19 @@
-// Copyright 2017-2020 @polkadot/apps-routing authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps-routing authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { Route } from './types';
+import type { TFunction } from 'i18next';
+import type { Route } from './types';
 
 import Component, { useCounter } from '@polkadot/app-council';
 
-export default function create (t: <T = string> (key: string, text: string, options: { ns: string }) => T): Route {
+export default function create (t: TFunction): Route {
   return {
     Component,
     display: {
       needsApi: [
+        'query.council.prime',
         [
+          'query.phragmenElection.candidates',
           'query.electionsPhragmen.candidates',
           'query.elections.candidates'
         ]
@@ -20,7 +22,7 @@ export default function create (t: <T = string> (key: string, text: string, opti
     group: 'governance',
     icon: 'building',
     name: 'council',
-    text: t<string>('nav.council', 'Council', { ns: 'apps-routing' }),
+    text: t('nav.council', 'Council', { ns: 'apps-routing' }),
     useCounter
   };
 }

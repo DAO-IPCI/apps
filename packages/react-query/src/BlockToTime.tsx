@@ -1,24 +1,27 @@
-// Copyright 2017-2020 @polkadot/react-query authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-query authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import type { ApiPromise } from '@polkadot/api';
 
 import BN from 'bn.js';
 import React from 'react';
 import styled from 'styled-components';
+
 import { useBlockTime } from '@polkadot/react-hooks';
 
 interface Props {
-  blocks?: BN;
+  api?: ApiPromise;
   children?: React.ReactNode;
   className?: string;
   isInline?: boolean;
   label?: React.ReactNode;
+  value?: BN;
 }
 
-function BlockToTime ({ blocks, children, className = '', isInline, label }: Props): React.ReactElement<Props> | null {
-  const [, text] = useBlockTime(blocks);
+function BlockToTime ({ api, children, className = '', isInline, label, value }: Props): React.ReactElement<Props> | null {
+  const [, text] = useBlockTime(value, api);
 
-  if (blocks?.ltn(0)) {
+  if (!value || value.isZero()) {
     return null;
   }
 
@@ -44,6 +47,6 @@ export default React.memo(styled(BlockToTime)`
   }
 
   span.timeUnits {
-    font-size: 0.85em;
+    font-size: 0.825em;
   }
 `);

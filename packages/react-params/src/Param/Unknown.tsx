@@ -1,13 +1,16 @@
-// Copyright 2017-2020 @polkadot/react-params authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-params authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { Props } from '../types';
+import type { Props as BaseProps } from '../types';
 
 import React from 'react';
 
 import BaseBytes from './BaseBytes';
 import Static from './Static';
+
+interface Props extends BaseProps {
+  children?: React.ReactNode;
+}
 
 function Unknown (props: Props): React.ReactElement<Props> {
   const { className = '', defaultValue, isDisabled, isError, label, name, onChange, onEnter, onEscape, type } = props;

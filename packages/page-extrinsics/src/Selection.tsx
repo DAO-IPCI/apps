@@ -1,13 +1,14 @@
-// Copyright 2017-2020 @polkadot/app-extrinsics authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/app-extrinsics authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-import { SubmittableExtrinsic } from '@polkadot/api/types';
+import type { SubmittableExtrinsic } from '@polkadot/api/types';
 
-import React, { useCallback, useState } from 'react';
-import { Button, Extrinsic, InputAddress, TxButton } from '@polkadot/react-components';
+import React, { useCallback, useMemo, useState } from 'react';
+
+import { Button, Extrinsic, InputAddress, MarkError, Output, TxButton } from '@polkadot/react-components';
 import { useApi } from '@polkadot/react-hooks';
 import { BalanceFree } from '@polkadot/react-query';
+import { u8aToHex } from '@polkadot/util';
 
 import { useTranslation } from './translate';
 
@@ -26,6 +27,20 @@ function Selection (): React.ReactElement {
   const _onExtrinsicError = useCallback(
     (error?: Error | null) => setError(error ? error.message : null),
     []
+  );
+
+  const [extrinsicHex, extrinsicHash] = useMemo(
+    (): [string, string] => {
+      if (!extrinsic) {
+        return ['0x', '0x'];
+      }
+
+      const u8a = extrinsic.method.toU8a();
+
+      // don't use the built-in hash, we only want to convert once
+      return [u8aToHex(u8a), extrinsic.registry.hash(u8a).toHex()];
+    },
+    [extrinsic]
   );
 
   return (
@@ -47,14 +62,26 @@ function Selection (): React.ReactElement {
         onChange={_onExtrinsicChange}
         onError={_onExtrinsicError}
       />
-      {error && (
-        <article className='error'>{error}</article>
+      <Output
+        isDisabled
+        isTrimmed
+        label='encoded call data'
+        value={extrinsicHex}
+        withCopy
+      />
+      <Output
+        isDisabled
+        label='encoded call hash'
+        value={extrinsicHash}
+        withCopy
+      />
+      {error && !extrinsic && (
+        <MarkError content={error} />
       )}
       <Button.Group>
         <TxButton
           extrinsic={extrinsic}
           icon='sign-in-alt'
-          isDisabled={!extrinsic}
           isUnsigned
           label={t<string>('Submit Unsigned')}
           withSpinner
@@ -63,7 +90,6 @@ function Selection (): React.ReactElement {
           accountId={accountId}
           extrinsic={extrinsic}
           icon='sign-in-alt'
-          isDisabled={!extrinsic || !accountId}
           label={t<string>('Submit Transaction')}
         />
       </Button.Group>

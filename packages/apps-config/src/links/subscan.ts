@@ -1,6 +1,5 @@
-// Copyright 2017-2020 @polkadot/apps-config authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/apps-config authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import BN from 'bn.js';
 
@@ -8,12 +7,23 @@ import { externalLogos } from '../ui/logos';
 
 export default {
   chains: {
+    'Acala Mandala TC5': 'acala-testnet',
+    'Bifrost Asgard Nightly': 'bifrost',
+    'Centrifuge Mainnet': 'centrifuge',
+    ChainX: 'chainx',
+    'Crust Maxwell': 'crust',
+    'Darwinia CC1': 'darwinia-cc1',
+    'Darwinia Crab': 'crab',
     Edgeware: 'edgeware',
+    Equilibrium: 'equilibrium',
     Kulupu: 'kulupu',
     Kusama: 'kusama',
-    'Kusama CC3': 'kusama',
+    'Laminar Turbulence TC2': 'laminar-testnet',
+    'Phala PoC-4': 'phala',
+    Plasm: 'plasm',
     Polkadot: 'polkadot',
-    'Polkadot CC1': 'polkadot-cc1',
+    Rococo: 'rococo',
+    Stafi: 'stafi',
     Westend: 'westend'
   },
   create: (chain: string, path: string, data: BN | number | string): string =>

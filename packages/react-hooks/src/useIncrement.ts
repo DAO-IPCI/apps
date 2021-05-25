@@ -1,11 +1,11 @@
-// Copyright 2017-2020 @polkadot/react-hooks authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
+// Copyright 2017-2021 @polkadot/react-hooks authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
 import { useCallback, useState } from 'react';
-import useIsMountedRef from './useIsMountedRef';
 
-export default function useIncrement (defaultValue = 1): [number, () => void, (value: number) => void] {
+import { useIsMountedRef } from './useIsMountedRef';
+
+export function useIncrement (defaultValue = 1): [number, () => void, (value: number) => void] {
   const mountedRef = useIsMountedRef();
   const [value, setValue] = useState(defaultValue);
 
