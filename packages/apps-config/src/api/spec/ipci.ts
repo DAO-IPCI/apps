@@ -1,3 +1,28 @@
+import type { OverrideBundleDefinition } from '@polkadot/types/types';
+
+// structs need to be in order
+/* eslint-disable sort-keys */
+
+const definitions: OverrideBundleDefinition = {
+  types: [
+    {
+      // on all versions
+      minmax: [0, undefined],
+      types: {
+        Record: "Vec<u8>",
+        TechnicalParam: "Vec<u8>",
+        TechnicalReport: "Vec<u8>",
+        EconomicalParam: "{}",
+        ProofParam: "MultiSignature",
+        LiabilityIndex: "u64"
+      }
+    }
+  ]
+};
+
+export default definitions;
+
+/*
 import { typesFromDefs } from '../util';
 
 
@@ -27,3 +52,5 @@ export default {
       "LiabilityIndex": "u64"
   }})
 };
+*/
+

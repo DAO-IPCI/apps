@@ -1,5 +1,4 @@
 {
-  "https://substrate.ipci.io/rpc": "IPCI Substrate",
   "lng.detect": "Default browser language (auto-detect)",
   "rpc.dev.custom": "Custom environment",
   "rpc.dev.custom.entry": "Custom {{WS_URL}}",
@@ -9,23 +8,6 @@
   "rpc.header.live": "Live networks",
   "rpc.header.live.relay": "Live relays & parachains",
   "rpc.header.test": "Test networks",
-  "rpc.ipci": "IPCI Substrate",
-  "rpc.kilt": "KILT Protocol (KILT Mashnet, hosted by KILT Protocol)",
-  "rpc.kulupu": "Kulupu (Kulupu Mainnet, hosted by Kulupu)",
-  "rpc.kusama.ava": "Kusama (Polkadot Canary, user-run public nodes; see https://status.cloud.ava.do/)",
-  "rpc.kusama.parity": "Kusama (Polkadot Canary, hosted by Parity)",
-  "rpc.kusama.w3f": "Kusama (Polkadot Canary, hosted by Web3 Foundation)",
-  "rpc.local": "Local Node (Own, 127.0.0.1:9944)",
-  "rpc.mandala": "Mandala (Acala Testnet, hosted by Acala)",
-  "rpc.nodle-arcadia": "Arcadia (Nodle Testnet, hosted by Nodle)",
-  "rpc.turbulence": "Turbulence (Laminar Testnet, hosted by Laminar)",
-  "rpc.westend": "Westend (Polkadot Testnet, hosted by Parity)",
-  "ss58.centrifuge": "Centrifuge (live)",
-  "ss58.default": "Default for the connected node",
-  "ss58.edgeware": "Edgeware (live)",
-  "ss58.kusama": "Kusama (canary)",
-  "ss58.polkadot": "Polkadot (live)",
-  "ss58.substrate": "Substrate (generic)"
   "rpc.header.test.relay": "Test relays & parachains",
   "rpc.hosted.by": "hosted by {{host}}",
   "rpc.kusama.bifrost": "Bifrost",
@@ -83,7 +65,6 @@
   "rpc.rococo.jupiter": "Patract Jupiter PC1",
   "rpc.rococo.kilt": "KILT PC1",
   "rpc.rococo.konomi": "Komomi Network",
-  "rpc.rococo.kylin": "Kylin Network",
   "rpc.rococo.manta": "Manta PC1",
   "rpc.rococo.mathchain": "MathChain PC1",
   "rpc.rococo.moonrock": "Moonrock",
@@ -129,7 +110,6 @@
   "rpc.test.ipse": "IPSE",
   "rpc.test.jupiter": "Jupiter",
   "rpc.test.kilt": "KILT Mashnet",
-  "rpc.test.kylin": "Kylin Testnet",
   "rpc.test.litentry": "Litentry Testnet",
   "rpc.test.mandala": "Mandala",
   "rpc.test.moonbeam": "Moonbase Alpha",
@@ -157,5 +137,6 @@
   "rpc.test.zero": "Zero",
   "rpc.westend": "Westend",
   "rpc.westend.shell": "Shell",
-  "ss58.default": "Default for the connected node"
+  "ss58.default": "Default for the connected node",
+  "substrate.ipci.io": "DAO IPCI"
 }

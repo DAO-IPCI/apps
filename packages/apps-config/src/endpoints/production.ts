@@ -18,6 +18,14 @@ import { expandEndpoints } from './util';
 export function createProduction (t: TFunction): LinkOption[] {
   return expandEndpoints(t, [
     {
+        info: 'dao-ipci',
+        text: t('substrate.ipci.io', 'DAO IPCI', { ns: 'apps-config' }),
+        providers: {
+            'DAO IPCI': 'wss://substrate.ipci.io'
+        }
+    }
+/*
+    {
       dnslink: 'centrifuge',
       info: 'centrifuge',
       text: t('rpc.prod.centrifuge', 'Centrifuge', { ns: 'apps-config' }),
@@ -166,5 +174,6 @@ export function createProduction (t: TFunction): LinkOption[] {
         DataHighway: 'wss://westlake.datahighway.com'
       }
     }
+*/
   ]);
 }

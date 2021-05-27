@@ -15,6 +15,7 @@ export { CUSTOM_ENDPOINT_KEY } from './development';
 export function createWsEndpoints (t: TFunction): LinkOption[] {
   return [
     ...createCustom(t),
+/*
     {
       isDisabled: false,
       isHeader: true,
@@ -32,6 +33,7 @@ export function createWsEndpoints (t: TFunction): LinkOption[] {
       value: ''
     },
     ...createTestingRelays(t),
+*/
     {
       isDisabled: false,
       isHeader: true,
@@ -41,6 +43,7 @@ export function createWsEndpoints (t: TFunction): LinkOption[] {
       value: ''
     },
     ...createProduction(t),
+/*
     {
       isDisabled: false,
       isHeader: true,
@@ -49,6 +52,7 @@ export function createWsEndpoints (t: TFunction): LinkOption[] {
       value: ''
     },
     ...createTesting(t),
+*/
     {
       isDevelopment: true,
       isDisabled: false,

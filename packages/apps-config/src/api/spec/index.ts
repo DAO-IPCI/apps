@@ -144,7 +144,7 @@ const spec: Record<string, OverrideBundleDefinition> = {
   'kilt-parachain': kilt,
   konomi,
   kulupu,
-  ipci,
+  'DAO IPCI': ipci,
   kylin,
   laminar,
   litentry,
