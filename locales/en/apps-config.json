@@ -137,5 +137,6 @@
   "rpc.test.zero": "Zero",
   "rpc.westend": "Westend",
   "rpc.westend.shell": "Shell",
-  "ss58.default": "Default for the connected node"
+  "ss58.default": "Default for the connected node",
+  "substrate.ipci.io": "DAO IPCI"
 }
