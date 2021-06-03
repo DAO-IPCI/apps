@@ -9,6 +9,10 @@ const definitions: OverrideBundleDefinition = {
       // on all versions
       minmax: [0, undefined],
       types: {
+        AccountInfo: 'AccountInfoWithRefCount',
+        Address: 'AccountId',
+        LookupSource: 'AccountId',
+        RefCount: 'u8',
         Record: "Vec<u8>",
         TechnicalParam: "Vec<u8>",
         TechnicalReport: "Vec<u8>",
@@ -50,10 +54,6 @@ export default {
         "result": "Option<Vec<u8>>"
       },
       "LiabilityIndex": "u64",
-      "Address": "IndicesLookupSource",
-      "LookupSource": "IndicesLookupSource",
-      "AccountInfo": "AccountInfoWithRefCount",
-      "RefCount": "u8"
   }})
 };
 */
