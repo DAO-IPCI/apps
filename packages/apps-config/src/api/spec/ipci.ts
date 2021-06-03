@@ -49,7 +49,11 @@ export default {
         "promisor": "AccountId",
         "result": "Option<Vec<u8>>"
       },
-      "LiabilityIndex": "u64"
+      "LiabilityIndex": "u64",
+      "Address": "IndicesLookupSource",
+      "LookupSource": "IndicesLookupSource",
+      "AccountInfo": "AccountInfoWithRefCount",
+      "RefCount": "u8"
   }})
 };
 */
